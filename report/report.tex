@@ -1,0 +1,51 @@
+\documentclass[a4paper]{article}
+
+\usepackage{pre_gen}
+
+\title{Conway's Game of Life}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+
+
+\section*{Algorithm}
+
+\textbf{Input}
+\begin{itemize}
+    \item Square binary grid OR grid size (for random grid)
+    \item Number of evolution timesteps
+    \item Save interval
+    \item Number of MPI ranks
+    \item Number of OpenMP threads
+    \item IF POSSIBLE: number of neighbours determining the rules?
+\end{itemize}
+
+\textbf{Output}
+\begin{itemize}
+    \item Grid at fixed intervals determined by Input
+    \item Some kind of report
+\end{itemize}
+
+\section*{Implementation}
+
+\textbf{Structure}
+
+The grid at all times consists of binary integers.
+
+To decide on: data structure to save the grid, domain decomposition
+
+Hard parts: counting live neighbours
+
+\subsection*{Profiling}
+
+\subsection*{Optimisiation}
+
+Separable 2D convolution
+
+\section*{Conclusion}
+
+
+\end{document}
