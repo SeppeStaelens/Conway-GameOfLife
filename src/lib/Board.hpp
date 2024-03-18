@@ -1,24 +1,23 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
-template <typename T>
 class Array1D{
     private:
         int size;
-        T* data;
+        int* data;
 
     public:
         Array1D(int size) {
             this -> size = size;
-            this -> data = new T[size];
+            this -> data = new int[size];
         }
         ~Array1D(){
             delete[] this -> data;
         }
-        T& operator()(int i, int j){
+        int& operator()(int i){
             return this -> data[i];
         }
-        T* getPointer() {
+        int* getPointer() {
             return this -> data;
         }
         int getSize() {
@@ -26,71 +25,98 @@ class Array1D{
         }
 };
 
-template <typename T>
-class MotherBoard{
-    private:
-        int N_row;
-        int N_col;
-        T* data;
+class Grid{
 
     public:
-        MotherBoard(int N_row, int N_col){
+
+        int N_row;
+        int N_col;
+        int* data;
+
+        Grid(int N_row, int N_col){
             this -> N_row = N_row;
             this -> N_col = N_col;
-            this -> data = new T[N_row*N_col];
+            this -> data = new int[N_row*N_col];
         }
-        ~MotherBoard(){
+        ~Grid(){
             delete[] this -> data;
         }
-        T& operator()(int i, int j){
+        int& operator()(int i, int j){
             return this -> data[i*N_col+j];
         }
-        T* getPointer() {
+        int* getPointer() {
             return this->data;
         }
         int getSize() {
             return this -> N_row * this -> N_col;
         }
+
+        void display() {
+            for (int i = 0; i < N_row; ++i) {
+                for (int j = 0; j < N_col; ++j) {
+                    std::cout << data[i*N_col+j] << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+
 };
 
-template <typename T>
-class Board : MotherBoard{
+class Board : public Grid{
 
     public:
-        /*The ghost rows include the corners and are therefore wider than the board*/
-        Array1D<T>(N_col+2) bottom_ghost_row;
-        Array1D<T>(N_col+2) upper_ghost_row;
-        Array1D<T>(N_row) left_ghost_col;
-        Array1D<T>(N_row) right_ghost_col;
 
-        void set_bottom_ghost(Array1D<T> arr){
-            bottom_ghost_row = arr;
-        }
-        void set_upper_ghost(Array1D<T> arr){
-            upper_ghost_row = arr;
-        }
-        void set_left_ghost(Array1D<T> arr){
-            left_ghost_col = arr;
-        }
-        void set_right_ghost(Array1D<T> arr){
-            right_ghost_col = arr;
+        Board(Grid motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left) {
+            for (int i = 0; i < row_upp - row_low; ++i) {
+                for (int j = 0; j < col_right - col_left; ++j) {
+                    data[i*N_col+j] = motherboard(row_low + i, col_left + j);
+                }
+            }
         }
 
-        Array1D<T>(N_col) get_bottom_row{
-            return data[(N_row - 1) * N_col : -1]           /*python style, likely change*/
+        ~Board(){
+            delete[] this -> data;
         }
-        Array1D<T>(N_col) get_upper_row{
-            return 1
-        }
-        Array1D<T>(N_col) get_left_col{
-            return
-        }
-        Array1D<T>(N_col) get_right_col{
-            return
-        }        
 
-        void count_neighbours(int i, int j){}
+        // /*The ghost rows include the corners and are therefore wider than the board*/
+        // Array1D<T>(N_col+2) bottom_ghost_row;
+        // Array1D<T>(N_col+2) upper_ghost_row;
+        // Array1D<T>(N_row) left_ghost_col;
+        // Array1D<T>(N_row) right_ghost_col;
 
-        
-    
+        // void set_bottom_ghost(Array1D<T> arr){
+        //     bottom_ghost_row = arr;
+        // }
+        // void set_upper_ghost(Array1D<T> arr){
+        //     upper_ghost_row = arr;
+        // }
+        // void set_left_ghost(Array1D<T> arr){
+        //     left_ghost_col = arr;
+        // }
+        // void set_right_ghost(Array1D<T> arr){
+        //     right_ghost_col = arr;
+        // }
+
+        Array1D get_bottom_row(){
+            Array1D bottom(N_col);
+            for (int i = 0; i < N_col; ++i) {
+                bottom(i) = data[(N_row - 1) * N_col + i];
+            }
+            return bottom;          
+        };
+
+        // Array1D<T>(N_col) get_upper_row{
+        //     return 1
+        // }
+        // Array1D<T>(N_col) get_left_col{
+        //     return
+        // }
+        // Array1D<T>(N_col) get_right_col{
+        //     return
+        // }        
+
+        // void count_neighbours(int i, int j){}
+
 };
+
+#endif

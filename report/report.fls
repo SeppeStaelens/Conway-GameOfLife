@@ -1,9 +1,9 @@
-PWD /home/seppe/Documents/Data/PhD/Courses/ARC/Coursework/report
+PWD /home/seppe/Documents/Data/PhD/Courses/ARC/Coursework/ss3033/report
 INPUT /etc/texmf/web2c/texmf.cnf
 INPUT /usr/share/texmf/web2c/texmf.cnf
 INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT /home/seppe/Documents/Data/PhD/Courses/ARC/Coursework/report/report.tex
+INPUT /home/seppe/Documents/Data/PhD/Courses/ARC/Coursework/ss3033/report/report.tex
 OUTPUT report.log
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls
