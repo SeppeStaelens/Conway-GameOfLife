@@ -1,3 +1,6 @@
+#include <iostream>
+#include <fstream>
+
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
@@ -17,11 +20,27 @@ class Array1D{
         int& operator()(int i){
             return this -> data[i];
         }
-        int* getPointer() {
-            return this -> data;
+
+        void overwrite(Array1D arr){
+            for (int i = 0; i < size; ++i){
+                data[i] = arr(i);
+            }
         }
-        int getSize() {
-            return this -> size;
+
+        Array1D sub_arr(int i_low, int i_upp){
+            int len = i_upp - i_low;
+            Array1D sub(len);
+            for (int i = 0; i < len; ++i) {
+                sub(i) = data[i_low + i];
+            }
+            return sub;
+        }
+
+        void display() {
+            for (int i = 0; i < size; ++i) {
+                    std::cout << data[i] << " ";
+            }
+            std::cout << std::endl;
         }
 };
 
@@ -44,11 +63,28 @@ class Grid{
         int& operator()(int i, int j){
             return this -> data[i*N_col+j];
         }
-        int* getPointer() {
-            return this->data;
+
+        void store_row(Array1D* store, int n_row) {
+            for (int i = 0; i < N_col; ++i) {
+                (*store)(i) = data[n_row * N_col + i];
+            } 
         }
-        int getSize() {
-            return this -> N_row * this -> N_col;
+        void store_col(Array1D* store, int n_col) {
+            for (int i = 0; i < N_row; ++i) {
+                (*store)(i) = data[i * N_col + n_col];
+            } 
+        }
+
+        Array1D sub_row(int n_row, int i_low, int i_upp){
+            Array1D temp(N_col);
+            store_row(&temp, n_row);
+            return temp.sub_arr(i_low, i_upp);
+        }
+
+        Array1D sub_col(int n_col, int i_low, int i_upp){
+            Array1D temp(N_row);
+            store_col(&temp, n_col);
+            return temp.sub_arr(i_low, i_upp);
         }
 
         void display() {
@@ -60,62 +96,145 @@ class Grid{
             }
         }
 
+        void save(std::string file) {
+            std::cout << file;
+            std::ofstream outputFile(file);
+            
+            if (!outputFile.is_open()) {
+                std::cerr << "Error opening file for writing!" << std::endl;
+            }
+
+            for (int i = 0; i < N_row; ++i) {
+                for (int j = 0; j < N_col; ++j) {
+                    outputFile << data[i*N_col+j] << " ";
+                }
+                outputFile << std::endl;
+            }
+
+            outputFile.close();
+        }
+
 };
 
 class Board : public Grid{
 
     public:
 
-        Board(Grid motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left) {
-            for (int i = 0; i < row_upp - row_low; ++i) {
-                for (int j = 0; j < col_right - col_left; ++j) {
-                    data[i*N_col+j] = motherboard(row_low + i, col_left + j);
+        /*The ghost rows include the corners and are therefore wider than the board*/
+        Array1D bottom_ghost_row;
+        Array1D upper_ghost_row;
+        Array1D left_ghost_col;
+        Array1D right_ghost_col;
+
+        Array1D bottom_row;
+        Array1D upper_row;
+        Array1D left_col;
+        Array1D right_col;
+
+        // Constructor and initialization of size of the arrays
+        Board(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left), 
+        bottom_ghost_row(N_col+2), upper_ghost_row(N_col+2), left_ghost_col(N_row), right_ghost_col(N_row), bottom_row(N_col), upper_row(N_col),
+        left_col(N_row), right_col(N_row) {
+            for (int i = 0; i < N_row; ++i) {
+                for (int j = 0; j < N_col; ++j) {
+                    data[i*N_col+j] = (*motherboard)(row_low + i, col_left + j);
                 }
             }
+            /*do something that demands N_row to be at least 3*/
         }
 
         ~Board(){
             delete[] this -> data;
         }
 
-        // /*The ghost rows include the corners and are therefore wider than the board*/
-        // Array1D<T>(N_col+2) bottom_ghost_row;
-        // Array1D<T>(N_col+2) upper_ghost_row;
-        // Array1D<T>(N_row) left_ghost_col;
-        // Array1D<T>(N_row) right_ghost_col;
-
-        // void set_bottom_ghost(Array1D<T> arr){
-        //     bottom_ghost_row = arr;
-        // }
-        // void set_upper_ghost(Array1D<T> arr){
-        //     upper_ghost_row = arr;
-        // }
-        // void set_left_ghost(Array1D<T> arr){
-        //     left_ghost_col = arr;
-        // }
-        // void set_right_ghost(Array1D<T> arr){
-        //     right_ghost_col = arr;
-        // }
-
-        Array1D get_bottom_row(){
-            Array1D bottom(N_col);
-            for (int i = 0; i < N_col; ++i) {
-                bottom(i) = data[(N_row - 1) * N_col + i];
+        void set_bottom_ghost_row(Array1D* target) {
+            for (int i = 0; i < N_col+2; ++i) {
+                bottom_ghost_row(i) = (*target)(i);
             }
-            return bottom;          
-        };
+        }
+        void set_upper_ghost_row(Array1D* target) {
+            for (int i = 0; i < N_col+2; ++i) {
+                upper_ghost_row(i) = (*target)(i);
+            }
+        }
 
-        // Array1D<T>(N_col) get_upper_row{
-        //     return 1
-        // }
-        // Array1D<T>(N_col) get_left_col{
-        //     return
-        // }
-        // Array1D<T>(N_col) get_right_col{
-        //     return
-        // }        
+        void set_left_ghost_col(Array1D* target) {
+            for (int i = 0; i < N_col; ++i) {
+                left_ghost_col(i) = (*target)(i);
+            }
+        }
+        void set_right_ghost_col(Array1D* target) {
+            for (int i = 0; i < N_col; ++i) {
+                right_ghost_col(i) = (*target)(i);
+            }
+        }
 
-        // void count_neighbours(int i, int j){}
+        void store_neighbour_row(Array1D* store, int n_row) {
+            (*store)(0) = left_ghost_col(n_row) + data[n_row * N_col + 0] + data[n_row * N_col + 1];
+            for (int i = 1; i < N_col-1; ++i) {
+                (*store)(i) = data[n_row * N_col + i-1] + data[n_row * N_col + i] 
+                                + data[n_row * N_col + i + 1];
+            } 
+            (*store)(N_col - 1) = data[n_row * N_col + N_col - 2] + data[n_row * N_col + N_col - 1] + right_ghost_col(n_row);    
+        }
+
+        void store_upper_ghost_neighbour_row(Array1D* store) {
+            for (int i = 0; i < N_col+1; ++i) {
+                (*store)(i) = upper_ghost_row(i) + upper_ghost_row(i+1) + upper_ghost_row(i+2);
+            }
+        }
+        void store_bottom_ghost_neighbour_row(Array1D* store) {
+            for (int i = 0; i < N_col; ++i) {
+                (*store)(i) = bottom_ghost_row(i) + bottom_ghost_row(i+1) + bottom_ghost_row(i+2);
+            }
+        }
+
+        void ghost_display(){
+            upper_ghost_row.display();
+
+            for (int i = 0; i < N_row; ++i) {
+                std::cout << left_ghost_col(i) << " ";
+                for (int j = 0; j < N_col; ++j) {
+                    std::cout << data[i*N_col+j] << " ";
+                }
+                std::cout << right_ghost_col(i) << std::endl;
+            }
+
+            bottom_ghost_row.display();
+        }
+
+        void update_board(){
+
+            int N_nb {0};
+            int val {0};
+            Array1D temp1(N_col), temp2(N_col), temp3(N_col);
+            store_upper_ghost_neighbour_row(&temp1);
+            store_neighbour_row(&temp2, 0);
+            store_neighbour_row(&temp3, 1);
+            for (int j = 0; j < N_col; ++j) {
+                val = data[j];
+                N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                data[j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+            }
+            for (int i = 1; i < N_row -1; ++i){
+                temp1.overwrite(temp2);
+                temp2.overwrite(temp3);
+                store_neighbour_row(&temp3, i+1);
+                for (int j = 0; j < N_col; ++j) {
+                    val = data[i*N_col + j];
+                    N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                    data[i*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+                }
+            }
+            temp1.overwrite(temp2);
+            temp2.overwrite(temp3);
+            store_bottom_ghost_neighbour_row(&temp3);
+            for (int j = 0; j < N_col; ++j) {
+                val = data[(N_row - 1)*N_col + j];
+                N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+            }
+        }
 
 };
 

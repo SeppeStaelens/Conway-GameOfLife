@@ -15,6 +15,7 @@ class GameParams{
         int evolve_steps {20};
         int random_data {1};
         double prob_live {0.5};
+        std::string output_path {"examples/"};
 
         GameParams(){} 
 
@@ -53,6 +54,8 @@ class GameParams{
                         std::istringstream(paramValue) >> random_data;
                     } else if (paramName == "prob_live") {
                         std::istringstream(paramValue) >> prob_live;
+                    } else if (paramName == "output_path") {
+                        std::istringstream(paramValue) >> output_path;
                     }
                 }
             }
@@ -66,7 +69,7 @@ class GameParams{
             std::cout << "N_critical: " << N_critical << std::endl;
             std::cout << "save interval: " << save_interval << std::endl;
             std::cout << "evolve steps: " << evolve_steps << std::endl;
-            std::cout << "random data: " << evolve_steps << std::endl;
+            std::cout << "random data: " << random_data << std::endl;
             std::cout << "probability to live: " << prob_live << std::endl;
         }
 
