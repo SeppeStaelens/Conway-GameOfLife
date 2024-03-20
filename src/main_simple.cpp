@@ -62,23 +62,18 @@ int main(int argc, char* argv[]) {
     board.set_bottom_ghost_row(&row);
 
     /* Display the board with ghost cells attached.*/
-    std::cout << "Motherboard with ghost cells." << std::endl;
+    std::cout << "Motherboard with ghost cells." << std::endl << std::endl;
 
     board.ghost_display();
     
     std::cout << std::endl << "After one update." << std::endl;
 
     board.update_board();
-    std::cout << std::endl << "Check"<<std::endl;
     board.display();
 
-    std::cout << std::endl << "Check"<<std::endl;
 
-    col.display();
     Array1D testarr =  board.sub_col(params.board_size - 1, 0, params.board_size);
-    testarr.display();
     col.overwrite(board.sub_col(params.board_size - 1, 0, params.board_size));
-    std::cout << "Fixed" << std::endl;
     board.set_left_ghost_col(&col);
     col.overwrite(board.sub_col(0, 0, params.board_size));
     board.set_right_ghost_col(&col);
@@ -88,14 +83,11 @@ int main(int argc, char* argv[]) {
     row.overwrite(board.periodic_row(0));
     board.set_bottom_ghost_row(&row);
 
-    std::cout << std::endl << "Check"<<std::endl;
-
-
     std::cout << "Board with ghost cells." << std::endl;
     board.ghost_display();
 
-    // std::string save_path = params.output_path + "test.txt";
-    // sub.save(save_path);
+    std::string save_path = params.output_path + "test.txt";
+    board.save(save_path);
     
     return 0;
 }

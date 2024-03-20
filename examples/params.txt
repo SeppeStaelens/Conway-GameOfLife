@@ -3,7 +3,7 @@
 #####################################
 
 
-board_size = 4                     # size of edge of the board. Square board implied
+board_size = 10                     # size of edge of the board. Square board implied
 N_critical = 3                      # number deciding the life and death rules. Default is 3.
 
 save_interval = 5                   # board is saved every ... steps

@@ -27,14 +27,18 @@ class Array1D{
             }
         }
 
+        void copy_into(Array1D* arr){
+            for (int i = 0; i < size; ++i){
+                data[i] = (*arr)(i);
+            }
+        }
+
         Array1D sub_arr(int i_low, int i_upp){
             int len = i_upp - i_low;
             Array1D sub(len);
             for (int i = 0; i < len; ++i) {
                 sub(i) = data[i_low + i];
             }
-            std::cout << "this" << std::endl;
-            sub.display();
             return sub;
         }
 
@@ -59,9 +63,12 @@ class Grid{
             this -> N_col = N_col;
             this -> data = new int[N_row*N_col];
         }
+
         ~Grid(){
+            // std::cout << "Grid destructor called" <<std::endl;
             delete[] this -> data;
         }
+
         int& operator()(int i, int j){
             return this -> data[i*N_col+j];
         }
@@ -150,9 +157,10 @@ class Board : public Grid{
             /*do something that demands N_row to be at least 3*/
         }
 
-        ~Board(){
-            delete[] this -> data;
-        }
+        // ~Board() {
+        //     std::cout << "Board destructor called" <<std::endl;
+        //     delete[] this -> data;
+        // }
 
         void set_bottom_ghost_row(Array1D* target) {
             for (int i = 0; i < N_col+2; ++i) {
@@ -186,7 +194,7 @@ class Board : public Grid{
         }
 
         void store_upper_ghost_neighbour_row(Array1D* store) {
-            for (int i = 0; i < N_col+1; ++i) {
+            for (int i = 0; i < N_col; ++i) {
                 (*store)(i) = upper_ghost_row(i) + upper_ghost_row(i+1) + upper_ghost_row(i+2);
             }
         }
@@ -222,8 +230,8 @@ class Board : public Grid{
                 data[j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
             }
             for (int i = 1; i < N_row -1; ++i){
-                temp1.overwrite(temp2);
-                temp2.overwrite(temp3);
+                temp1.copy_into(&temp2);
+                temp2.copy_into(&temp3);
                 store_neighbour_row(&temp3, i+1);
                 for (int j = 0; j < N_col; ++j) {
                     val = data[i*N_col + j];
@@ -231,15 +239,14 @@ class Board : public Grid{
                     data[i*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
                 }
             }
-            temp1.overwrite(temp2);
-            temp2.overwrite(temp3);
+            temp1.copy_into(&temp2);
+            temp2.copy_into(&temp3);
             store_bottom_ghost_neighbour_row(&temp3);
             for (int j = 0; j < N_col; ++j) {
                 val = data[(N_row - 1)*N_col + j];
                 N_nb = temp1(j) + temp2(j) + temp3(j) - val;
                 data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
             }
-            std::cout << &temp1 << std::endl << &temp2 << std::endl << &temp3;
         }
 
 };
