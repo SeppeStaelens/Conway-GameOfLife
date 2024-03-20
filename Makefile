@@ -1,18 +1,24 @@
-BUILDS = compile build clean
+BUILDS = release build clean
 
 .PHONY := $(BUILDS)
 
-.DEFAULT_GOAL := compile
+.DEFAULT_GOAL := release
 
-compile :
+release :
 	@echo "Compiling Project"
-	cmake --build build
-	@echo "Done Compiling Project."
+	cmake --build build/release
+	@echo "Done Compiling Release."
+
+debug :
+	@echo "Compiling Debug"
+	cmake --build build/debug
+	@echo "Done Compiling Debug."
 
 build :
-	@echo "Building CMake Project"
-	cmake -S . -B build
-	@echo "Done Building CMake Project"
+	@echo "Building CMake Projects"
+	cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug
+	cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release
+	@echo "Done Building CMake Projects"
 
 clean :
 	@echo "Cleaning CMake Project"

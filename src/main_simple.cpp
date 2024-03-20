@@ -43,52 +43,56 @@ int main(int argc, char* argv[]) {
 
     /* For this simple example, we will not do domain decomposition. 
        Therefore, the entire Grid is passed to a motherboard class. */
-    Board sub(&motherboard, 0, params.board_size, 0, params.board_size);
+    Board board(&motherboard, 0, params.board_size, 0, params.board_size);
 
     /* Given the periodic boundary conditions, we need to set the ghost rows.
        The ghost columns are easy, they are simply the first and last column.*/
     Array1D col = motherboard.sub_col(params.board_size - 1, 0, params.board_size);
-    sub.set_left_ghost_col(&col);
+    board.set_left_ghost_col(&col);
 
     col.overwrite(motherboard.sub_col(0, 0, params.board_size));
-    sub.set_right_ghost_col(&col);
+    board.set_right_ghost_col(&col);
 
     /* For the ghost rows, we need an extra step, as the ghost corners are not 
        trivially included in the upper and bottom row. This is wrapped in the periodic_row method.*/
     Array1D row = motherboard.periodic_row(params.board_size - 1);
-    sub.set_upper_ghost_row(&row);
+    board.set_upper_ghost_row(&row);
 
     row.overwrite(motherboard.periodic_row(0));
-    sub.set_bottom_ghost_row(&row);
+    board.set_bottom_ghost_row(&row);
 
     /* Display the board with ghost cells attached.*/
     std::cout << "Motherboard with ghost cells." << std::endl;
 
-    sub.ghost_display();
+    board.ghost_display();
     
     std::cout << std::endl << "After one update." << std::endl;
 
-    sub.update_board();
+    board.update_board();
     std::cout << std::endl << "Check"<<std::endl;
-    sub.display();
+    board.display();
 
     std::cout << std::endl << "Check"<<std::endl;
 
-    col.overwrite(sub.sub_col(params.board_size - 1, 0, params.board_size));
-    sub.set_left_ghost_col(&col);
-    col.overwrite(sub.sub_col(0, 0, params.board_size));
-    sub.set_right_ghost_col(&col);
+    col.display();
+    Array1D testarr =  board.sub_col(params.board_size - 1, 0, params.board_size);
+    testarr.display();
+    col.overwrite(board.sub_col(params.board_size - 1, 0, params.board_size));
+    std::cout << "Fixed" << std::endl;
+    board.set_left_ghost_col(&col);
+    col.overwrite(board.sub_col(0, 0, params.board_size));
+    board.set_right_ghost_col(&col);
 
-    row.overwrite(sub.periodic_row(params.board_size - 1));
-    sub.set_upper_ghost_row(&row);
-    row.overwrite(sub.periodic_row(0));
-    sub.set_bottom_ghost_row(&row);
+    row.overwrite(board.periodic_row(params.board_size - 1));
+    board.set_upper_ghost_row(&row);
+    row.overwrite(board.periodic_row(0));
+    board.set_bottom_ghost_row(&row);
 
     std::cout << std::endl << "Check"<<std::endl;
 
 
     std::cout << "Board with ghost cells." << std::endl;
-    sub.ghost_display();
+    board.ghost_display();
 
     // std::string save_path = params.output_path + "test.txt";
     // sub.save(save_path);

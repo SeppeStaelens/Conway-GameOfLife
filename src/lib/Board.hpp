@@ -33,6 +33,8 @@ class Array1D{
             for (int i = 0; i < len; ++i) {
                 sub(i) = data[i_low + i];
             }
+            std::cout << "this" << std::endl;
+            sub.display();
             return sub;
         }
 
@@ -134,15 +136,12 @@ class Board : public Grid{
         Array1D left_ghost_col;
         Array1D right_ghost_col;
 
-        Array1D bottom_row;
-        Array1D upper_row;
-        Array1D left_col;
-        Array1D right_col;
+        Array1D temp1, temp2, temp3;
 
         // Constructor and initialization of size of the arrays
         Board(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left), 
-        bottom_ghost_row(N_col+2), upper_ghost_row(N_col+2), left_ghost_col(N_row), right_ghost_col(N_row), bottom_row(N_col), upper_row(N_col),
-        left_col(N_row), right_col(N_row) {
+        bottom_ghost_row(N_col+2), upper_ghost_row(N_col+2), left_ghost_col(N_row), right_ghost_col(N_row),
+         temp1(N_col), temp2(N_col), temp3(N_col) {
             for (int i = 0; i < N_row; ++i) {
                 for (int j = 0; j < N_col; ++j) {
                     data[i*N_col+j] = (*motherboard)(row_low + i, col_left + j);
@@ -214,7 +213,6 @@ class Board : public Grid{
         void update_board(){
             int N_nb {0};
             int val {0};
-            Array1D temp1(N_col), temp2(N_col), temp3(N_col);
             store_upper_ghost_neighbour_row(&temp1);
             store_neighbour_row(&temp2, 0);
             store_neighbour_row(&temp3, 1);
