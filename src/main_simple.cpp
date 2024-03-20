@@ -1,7 +1,8 @@
 #include <iostream>
+#include <random>
+
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
-#include <random>
 
 int main(int argc, char* argv[]) {
 
@@ -23,8 +24,9 @@ int main(int argc, char* argv[]) {
         std::random_device rd;
         std::mt19937 gen(rd());
         
-        // Define the distribution for generating random binary numbers (0 or 1)
-        std::bernoulli_distribution dist(params.prob_live); // Probability of success (getting 1) is 0.5
+        /* Define the Bernoulli distribution for generating random binary numbers (0 or 1).
+           The parameter params.prob_live reflects the probability of generating a 1.*/
+        std::bernoulli_distribution dist(params.prob_live);
 
         // Fill the matrix with random binary numbers
         for (int i = 0; i < params.board_size; ++i) {
@@ -34,33 +36,62 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Display the motherboard.
+    std::cout << "The motherboard." << std::endl << std::endl;
     motherboard.display();
     std::cout << std::endl; 
 
-    Board sub(&motherboard, 2, 5, 2, 5);
-    sub.display();
+    /* For this simple example, we will not do domain decomposition. 
+       Therefore, the entire Grid is passed to a motherboard class. */
+    Board sub(&motherboard, 0, params.board_size, 0, params.board_size);
 
-    Array1D test3 = motherboard.sub_row(1, 1, 6);
-    sub.set_upper_ghost_row(&test3);
-
-    test3.overwrite(motherboard.sub_row(5, 1, 6));
-    sub.set_bottom_ghost_row(&test3);
-
-    Array1D col = motherboard.sub_col(1, 2, 5);
+    /* Given the periodic boundary conditions, we need to set the ghost rows.
+       The ghost columns are easy, they are simply the first and last column.*/
+    Array1D col = motherboard.sub_col(params.board_size - 1, 0, params.board_size);
     sub.set_left_ghost_col(&col);
 
-    col.overwrite(motherboard.sub_col(5, 2, 5));
+    col.overwrite(motherboard.sub_col(0, 0, params.board_size));
     sub.set_right_ghost_col(&col);
 
-    std::cout << "dis" << std::endl;
+    /* For the ghost rows, we need an extra step, as the ghost corners are not 
+       trivially included in the upper and bottom row. This is wrapped in the periodic_row method.*/
+    Array1D row = motherboard.periodic_row(params.board_size - 1);
+    sub.set_upper_ghost_row(&row);
+
+    row.overwrite(motherboard.periodic_row(0));
+    sub.set_bottom_ghost_row(&row);
+
+    /* Display the board with ghost cells attached.*/
+    std::cout << "Motherboard with ghost cells." << std::endl;
 
     sub.ghost_display();
     
-    std::cout << std::endl << "overwrite" << std::endl;
+    std::cout << std::endl << "After one update." << std::endl;
+
     sub.update_board();
+    std::cout << std::endl << "Check"<<std::endl;
     sub.display();
-    std::string save_path = params.output_path + "test.txt";
-    sub.save(save_path);
+
+    std::cout << std::endl << "Check"<<std::endl;
+
+    col.overwrite(sub.sub_col(params.board_size - 1, 0, params.board_size));
+    sub.set_left_ghost_col(&col);
+    col.overwrite(sub.sub_col(0, 0, params.board_size));
+    sub.set_right_ghost_col(&col);
+
+    row.overwrite(sub.periodic_row(params.board_size - 1));
+    sub.set_upper_ghost_row(&row);
+    row.overwrite(sub.periodic_row(0));
+    sub.set_bottom_ghost_row(&row);
+
+    std::cout << std::endl << "Check"<<std::endl;
+
+
+    std::cout << "Board with ghost cells." << std::endl;
+    sub.ghost_display();
+
+    // std::string save_path = params.output_path + "test.txt";
+    // sub.save(save_path);
     
     return 0;
 }

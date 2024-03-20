@@ -64,9 +64,9 @@ class Grid{
             return this -> data[i*N_col+j];
         }
 
-        void store_row(Array1D* store, int n_row) {
+        void store_row(Array1D* store, int n_row, int shift = 0) {
             for (int i = 0; i < N_col; ++i) {
-                (*store)(i) = data[n_row * N_col + i];
+                (*store)(i + shift) = data[n_row * N_col + i];
             } 
         }
         void store_col(Array1D* store, int n_col) {
@@ -94,6 +94,14 @@ class Grid{
                 }
                 std::cout << std::endl;
             }
+        }
+
+        Array1D periodic_row(int n_row){
+            Array1D temp(N_col + 2);
+            temp(0) = data[n_row * N_col + N_col - 1];
+            store_row(&temp, n_row, 1);
+            temp(N_col + 1) = data[n_row * N_col];
+            return temp;
         }
 
         void save(std::string file) {
@@ -204,7 +212,6 @@ class Board : public Grid{
         }
 
         void update_board(){
-
             int N_nb {0};
             int val {0};
             Array1D temp1(N_col), temp2(N_col), temp3(N_col);
@@ -234,6 +241,7 @@ class Board : public Grid{
                 N_nb = temp1(j) + temp2(j) + temp3(j) - val;
                 data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
             }
+            std::cout << &temp1 << std::endl << &temp2 << std::endl << &temp3;
         }
 
 };
