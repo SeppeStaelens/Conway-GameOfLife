@@ -6,6 +6,6 @@ build/*
 *.fls
 *.log
 *.out
-*synctex.gz
+*.synctex.gz
 *.tex
 
