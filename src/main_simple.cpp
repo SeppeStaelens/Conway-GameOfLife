@@ -44,6 +44,8 @@ int main(int argc, char* argv[]) {
     /* For this simple example, we will not do domain decomposition. 
        Therefore, the entire Grid is passed to a motherboard class. */
     Board board(&motherboard, 0, params.board_size, 0, params.board_size);
+    std::string save_path = params.output_path + "step0.txt";
+    board.save(save_path);
 
     /* Given the periodic boundary conditions, we need to set the ghost rows.
        The ghost columns are easy, they are simply the first and last column.*/
@@ -86,7 +88,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Board with ghost cells." << std::endl;
     board.ghost_display();
 
-    std::string save_path = params.output_path + "test.txt";
+    save_path = params.output_path + "step1.txt";
     board.save(save_path);
     
     return 0;

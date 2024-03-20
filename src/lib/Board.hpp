@@ -122,9 +122,10 @@ class Grid{
             }
 
             for (int i = 0; i < N_row; ++i) {
-                for (int j = 0; j < N_col; ++j) {
+                for (int j = 0; j < N_col-1; ++j) {
                     outputFile << data[i*N_col+j] << " ";
                 }
+                outputFile << data[i*N_col+N_col - 1];
                 outputFile << std::endl;
             }
 
