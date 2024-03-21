@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 
 data_path = "examples/spaceship/"
 
-for i in range(1, 51):
+for i in range(0, 29):
     data_name = f"step{i}"
 
-    data = pd.read_csv(data_path + data_name + ".txt", sep = " ", header=None)
+    data = pd.read_csv(data_path + "txt/" + data_name + ".txt", sep = " ", header=None)
 
     N = len(data)
 
@@ -32,8 +32,7 @@ for i in range(1, 51):
     # Remove minor ticks
     ax.tick_params(which='minor', bottom=False, left=False)
 
-    plt.savefig(data_path + data_name + ".png")
+    plt.savefig(data_path + "png/" + data_name + ".png")
 
-# plt.show()
-
+    plt.close()
 
