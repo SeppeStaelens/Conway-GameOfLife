@@ -57,10 +57,12 @@ class Grid{
         int N_row;
         int N_col;
         int* data;
+        int N_nb_crit;
 
-        Grid(int N_row, int N_col){
+        Grid(int N_row, int N_col, int N_nb_crit = 3){
             this -> N_row = N_row;
             this -> N_col = N_col;
+            this -> N_nb_crit = N_nb_crit;
             this -> data = new int[N_row*N_col];
         }
 
@@ -114,7 +116,6 @@ class Grid{
         }
 
         void save(std::string file) {
-            std::cout << file;
             std::ofstream outputFile(file);
             
             if (!outputFile.is_open()) {
@@ -147,7 +148,7 @@ class Board : public Grid{
         Array1D temp1, temp2, temp3;
 
         // Constructor and initialization of size of the arrays
-        Board(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left), 
+        Board(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left, (*motherboard).N_nb_crit), 
         bottom_ghost_row(N_col+2), upper_ghost_row(N_col+2), left_ghost_col(N_row), right_ghost_col(N_row),
          temp1(N_col), temp2(N_col), temp3(N_col) {
             for (int i = 0; i < N_row; ++i) {
@@ -157,11 +158,6 @@ class Board : public Grid{
             }
             /*do something that demands N_row to be at least 3*/
         }
-
-        // ~Board() {
-        //     std::cout << "Board destructor called" <<std::endl;
-        //     delete[] this -> data;
-        // }
 
         void set_bottom_ghost_row(Array1D* target) {
             for (int i = 0; i < N_col+2; ++i) {
@@ -228,7 +224,7 @@ class Board : public Grid{
             for (int j = 0; j < N_col; ++j) {
                 val = data[j];
                 N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                data[j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+                data[j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
             }
             for (int i = 1; i < N_row -1; ++i){
                 temp1.copy_into(&temp2);
@@ -237,7 +233,7 @@ class Board : public Grid{
                 for (int j = 0; j < N_col; ++j) {
                     val = data[i*N_col + j];
                     N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                    data[i*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+                    data[i*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
                 }
             }
             temp1.copy_into(&temp2);
@@ -246,7 +242,7 @@ class Board : public Grid{
             for (int j = 0; j < N_col; ++j) {
                 val = data[(N_row - 1)*N_col + j];
                 N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == 3) + val * (N_nb == 3 || N_nb == 2);
+                data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
             }
         }
 

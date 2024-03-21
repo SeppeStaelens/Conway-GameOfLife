@@ -1,8 +1,8 @@
 #include <iostream>
-#include <random>
 
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
+#include "lib/Functions.hpp"
 
 int main(int argc, char* argv[]) {
 
@@ -16,30 +16,21 @@ int main(int argc, char* argv[]) {
     
     /*Create the motherboard, i.e. the overarching grid on which we play.
       We assume it is square, and that all data can be read on one core.*/
-    Grid motherboard(params.board_size, params.board_size);
+    Grid motherboard(params.board_size, params.board_size, params.N_critical);
 
     if (params.random_data == 1) {
-
-        // Use a random device to seed the random number engine
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        
-        /* Define the Bernoulli distribution for generating random binary numbers (0 or 1).
-           The parameter params.prob_live reflects the probability of generating a 1.*/
-        std::bernoulli_distribution dist(params.prob_live);
-
-        // Fill the matrix with random binary numbers
-        for (int i = 0; i < params.board_size; ++i) {
-            for (int j = 0; j < params.board_size; ++j) {
-                motherboard(i,j) = dist(gen);
-            }
-        }
+      initialize_random(&motherboard, &params);
+    }
+    else{
+      initialize_from_file(&motherboard, &params, params.board_file);
     }
 
     // Display the motherboard.
-    std::cout << "The motherboard." << std::endl << std::endl;
-    motherboard.display();
-    std::cout << std::endl; 
+    if (params.board_size <= 10 ){
+      std::cout << "The motherboard." << std::endl << std::endl;
+      motherboard.display();
+      std::cout << std::endl; 
+    }
 
     /* For this simple example, we will not do domain decomposition. 
        Therefore, the entire Grid is passed to a motherboard class. */
@@ -63,33 +54,14 @@ int main(int argc, char* argv[]) {
     row.overwrite(motherboard.periodic_row(0));
     board.set_bottom_ghost_row(&row);
 
-    /* Display the board with ghost cells attached.*/
-    std::cout << "Motherboard with ghost cells." << std::endl << std::endl;
+    if (params.board_size <= 10 ){
+      /* Display the board with ghost cells attached.*/
+      std::cout << "Motherboard with ghost cells." << std::endl << std::endl;
 
-    board.ghost_display();
-    
-    std::cout << std::endl << "After one update." << std::endl;
+      board.ghost_display();
+    }
 
-    board.update_board();
-    board.display();
-
-
-    Array1D testarr =  board.sub_col(params.board_size - 1, 0, params.board_size);
-    col.overwrite(board.sub_col(params.board_size - 1, 0, params.board_size));
-    board.set_left_ghost_col(&col);
-    col.overwrite(board.sub_col(0, 0, params.board_size));
-    board.set_right_ghost_col(&col);
-
-    row.overwrite(board.periodic_row(params.board_size - 1));
-    board.set_upper_ghost_row(&row);
-    row.overwrite(board.periodic_row(0));
-    board.set_bottom_ghost_row(&row);
-
-    std::cout << "Board with ghost cells." << std::endl;
-    board.ghost_display();
-
-    save_path = params.output_path + "step1.txt";
-    board.save(save_path);
+    iteration_one_board(&board, &params, &row, &col);
     
     return 0;
 }

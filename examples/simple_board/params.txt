@@ -1,0 +1,19 @@
+#####################################
+## Parameters for the Game of Life ##
+#####################################
+
+
+board_size = 10                     # size of edge of the board. Square board implied
+N_critical = 3                      # number deciding the life and death rules. Default is 3.
+
+save_interval = 5                   # board is saved every ... steps
+num_evolve_steps = 100
+
+random_data = 1                     # if set to zero, the board in board_file will be used as starting condition.
+                                    # if set to one, the board will be initialized randomly
+prob_live = 0.4                     # for random initialization, the probability for a cell to live
+
+# data can be read in from a text file that is white tab separated. Comment this line if not used.
+# board_file = "example.txt"      
+
+output_path = examples/simple_board/

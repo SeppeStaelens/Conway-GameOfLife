@@ -8,4 +8,5 @@ build/*
 *.out
 *.synctex.gz
 *.tex
+step*.txt
 
