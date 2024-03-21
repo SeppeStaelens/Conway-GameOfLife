@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 
 ### SETTINGS ###
 
-data_path = "examples/spaceship/"
+data_path = "examples/Gosper_glider_gun/"
 
-for i in range(0, 29):
+for i in range(0, 121):
     data_name = f"step{i}"
 
     data = pd.read_csv(data_path + "txt/" + data_name + ".txt", sep = " ", header=None)

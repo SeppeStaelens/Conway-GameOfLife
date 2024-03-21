@@ -9,4 +9,5 @@ build/*
 *.synctex.gz
 *.tex
 step*.txt
+examples/Gosper_glider_gun/png/*
 
