@@ -4,16 +4,17 @@ import matplotlib.pyplot as plt
 
 ### SETTINGS ###
 
-data_path = "examples/Gosper_glider_gun/"
+data_path = "examples/large/"
+size = 100
 
-for i in range(0, 121):
+for i in range(0, 1):
     data_name = f"step{i}"
 
     data = pd.read_csv(data_path + "txt/" + data_name + ".txt", sep = " ", header=None)
 
     N = len(data)
 
-    plt.figure()
+    plt.figure(figsize = (np.round(size), np.round(size)))
     im = plt.imshow(data, cmap="Greys")
 
     ax = plt.gca()
@@ -27,12 +28,12 @@ for i in range(0, 121):
     ax.set_yticks(np.arange(-.5, N, 1), minor=True)
 
     # Gridlines based on minor ticks
-    ax.grid(which='minor', color='grey', linestyle='-', linewidth=2)
+    ax.grid(which='minor', color='grey', linestyle='-', linewidth=1)
 
     # Remove minor ticks
     ax.tick_params(which='minor', bottom=False, left=False)
 
-    plt.savefig(data_path + "png/" + data_name + ".png")
+    plt.savefig(data_path + "png/" + data_name + ".png", dpi = size)
 
     plt.close()
 

@@ -14,6 +14,7 @@ class GameParams{
         int save_interval {1};
         int evolve_steps {20};
         int random_data {1};
+        int num_threads {1};
         double prob_live {0.5};
         std::string board_file {"examples/"};
         std::string output_path {"examples/"};
@@ -59,6 +60,8 @@ class GameParams{
                         std::istringstream(paramValue) >> board_file;
                     }else if (paramName == "output_path") {
                         std::istringstream(paramValue) >> output_path;
+                    } else if (paramName == "num_threads") {
+                        std::istringstream(paramValue) >> num_threads;
                     }
                 }
             }
@@ -72,6 +75,7 @@ class GameParams{
             std::cout << "N_critical: " << N_critical << std::endl;
             std::cout << "save interval: " << save_interval << std::endl;
             std::cout << "evolve steps: " << evolve_steps << std::endl;
+            std::cout << "num omp threads: " << num_threads << std::endl;
             std::cout << "probability to live: " << prob_live << std::endl;
             if (random_data) {
                 std::cout << "initialization: random" << std::endl;

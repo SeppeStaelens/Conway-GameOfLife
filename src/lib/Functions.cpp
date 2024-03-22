@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <random>
+#include <omp.h>
+
 #include "Board.hpp"
 #include "GameParams.hpp"
 

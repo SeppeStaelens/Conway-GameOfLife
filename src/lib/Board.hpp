@@ -58,12 +58,14 @@ class Grid{
         int N_col;
         int* data;
         int N_nb_crit;
+        int size;
 
         Grid(int N_row, int N_col, int N_nb_crit = 3){
             this -> N_row = N_row;
             this -> N_col = N_col;
             this -> N_nb_crit = N_nb_crit;
             this -> data = new int[N_row*N_col];
+            size = N_row * N_col;
         }
 
         ~Grid(){

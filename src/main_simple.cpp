@@ -61,6 +61,8 @@ int main(int argc, char* argv[]) {
       board.ghost_display();
     }
 
+    /* Actual iteration of the update procedure.
+       row and col are passed as fixed storage containers.*/
     iteration_one_board(&board, &params, &row, &col);
     
     return 0;
