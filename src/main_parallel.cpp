@@ -1,7 +1,7 @@
 #include <iostream>
 #include <omp.h>
-// #include <mpi.h>
-#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+#include <mpi.h>
+// #include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"

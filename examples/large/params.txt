@@ -3,15 +3,15 @@
 #####################################
 
 
-board_size = 6                    # size of edge of the board. Square board implied. If reading a text file, this size has to be correct!
+board_size = 1000                    # size of edge of the board. Square board implied. If reading a text file, this size has to be correct!
 N_critical = 3                      # number deciding the life and death rules. Default is 3.
 
-save_interval = 1                   # board is saved every ... steps
-num_evolve_steps = 100
+save_interval = 10000                   # board is saved every ... steps
+num_evolve_steps = 1000
 
 num_threads = 4                     # number of openMP threads
 
-random_data = 0                     # if set to zero, the board in board_file will be used as starting condition.
+random_data = 1                     # if set to zero, the board in board_file will be used as starting condition.
                                     # if set to one, the board will be initialized randomly
 prob_live = 0.4                     # for random initialization, the probability for a cell to live
 
