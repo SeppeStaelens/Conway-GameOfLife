@@ -23,6 +23,7 @@ void initialize_random(Grid* grid, GameParams* params){
             (*grid)(i,j) = dist(gen);
         }
     }
+    
 
     std::cout << "Board initialized randomly." << std::endl << std::endl;
    

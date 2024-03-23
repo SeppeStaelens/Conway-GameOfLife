@@ -1,15 +1,15 @@
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
 class Array1D{
-    private:
+    public:
         int size;
         int* data;
 
-    public:
         Array1D(int size) {
             this -> size = size;
             this -> data = new int[size];
@@ -21,9 +21,9 @@ class Array1D{
             return this -> data[i];
         }
 
-        void overwrite(Array1D arr){
-            for (int i = 0; i < size; ++i){
-                data[i] = arr(i);
+        void overwrite(Array1D arr, int shift = 0){
+            for (int i = 0; i < arr.size; ++i){
+                data[i + shift] = arr(i);
             }
         }
 
@@ -34,10 +34,15 @@ class Array1D{
         }
 
         Array1D sub_arr(int i_low, int i_upp){
-            int len = i_upp - i_low;
+            int len;
+            if (i_low > i_upp){
+                len = size + i_upp - i_low;
+            } else {
+                len = i_upp - i_low;
+            }
             Array1D sub(len);
             for (int i = 0; i < len; ++i) {
-                sub(i) = data[i_low + i];
+                sub(i) = data[(i_low + i) % size];
             }
             return sub;
         }
@@ -51,9 +56,7 @@ class Array1D{
 };
 
 class Grid{
-
     public:
-
         int N_row;
         int N_col;
         int* data;
@@ -67,12 +70,10 @@ class Grid{
             this -> data = new int[N_row*N_col];
             size = N_row * N_col;
         }
-
         ~Grid(){
             // std::cout << "Grid destructor called" <<std::endl;
             delete[] this -> data;
         }
-
         int& operator()(int i, int j){
             return this -> data[i*N_col+j];
         }
@@ -82,6 +83,7 @@ class Grid{
                 (*store)(i + shift) = data[n_row * N_col + i];
             } 
         }
+
         void store_col(Array1D* store, int n_col) {
             for (int i = 0; i < N_row; ++i) {
                 (*store)(i) = data[i * N_col + n_col];
@@ -135,12 +137,32 @@ class Grid{
             outputFile.close();
         }
 
+        void store_data(int* arr){
+            for (int i = 0; i < size; i++){
+                arr[i] = data[i];
+            }
+        }
+
+        void read_data(int* arr){
+            for (int i = 0; i < size; i++){
+                data[i] = arr[i];
+            }
+        }
+
+        void overwrite_sub_board(int* arr, int row_low, int row_upp, int col_low, int col_upp){
+            int n_rows = row_upp - row_low;
+            int n_cols = col_upp - col_low;
+            #pragma omp parallel for collapse(2)
+                for (int i = 0; i < n_rows; i++){
+                    for (int j = 0; j < n_cols; j++){
+                        data[(row_low + i)*N_col + col_low + j] = arr[i*n_cols + j];
+                    }
+                }
+        }
 };
 
 class Board : public Grid{
-
     public:
-
         /*The ghost rows include the corners and are therefore wider than the board*/
         Array1D bottom_ghost_row;
         Array1D upper_ghost_row;
@@ -150,15 +172,21 @@ class Board : public Grid{
         Array1D temp1, temp2, temp3;
 
         // Constructor and initialization of size of the arrays
-        Board(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right) : Grid(row_upp - row_low, col_right - col_left, (*motherboard).N_nb_crit), 
+        Board(int N_row, int N_col) : Grid(N_row, N_col), 
         bottom_ghost_row(N_col+2), upper_ghost_row(N_col+2), left_ghost_col(N_row), right_ghost_col(N_row),
-         temp1(N_col), temp2(N_col), temp3(N_col) {
-            for (int i = 0; i < N_row; ++i) {
-                for (int j = 0; j < N_col; ++j) {
-                    data[i*N_col+j] = (*motherboard)(row_low + i, col_left + j);
-                }
-            }
+         temp1(N_col), temp2(N_col), temp3(N_col) { 
             /*do something that demands N_row to be at least 3*/
+        }
+
+        void init_from_motherboard(Grid* motherboard, int row_low, int row_upp, int col_left, int col_right){
+            N_nb_crit = (*motherboard).N_nb_crit;
+            #pragma omp parallel for collapse(2)
+                for (int i = 0; i < N_row; ++i) {
+                    for (int j = 0; j < N_col; ++j) {
+                        data[i*N_col+j] = (*motherboard)(row_low + i, col_left + j);
+                    }
+                }
+            
         }
 
         void set_bottom_ghost_row(Array1D* target) {
@@ -205,7 +233,6 @@ class Board : public Grid{
 
         void ghost_display(){
             upper_ghost_row.display();
-
             for (int i = 0; i < N_row; ++i) {
                 std::cout << left_ghost_col(i) << " ";
                 for (int j = 0; j < N_col; ++j) {
@@ -213,7 +240,6 @@ class Board : public Grid{
                 }
                 std::cout << right_ghost_col(i) << std::endl;
             }
-
             bottom_ghost_row.display();
         }
 
@@ -223,31 +249,34 @@ class Board : public Grid{
             store_upper_ghost_neighbour_row(&temp1);
             store_neighbour_row(&temp2, 0);
             store_neighbour_row(&temp3, 1);
-            for (int j = 0; j < N_col; ++j) {
-                val = data[j];
-                N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                data[j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
-            }
+            #pragma omp parallel for
+                for (int j = 0; j < N_col; ++j) {
+                    val = data[j];
+                    N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                    data[j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
+                }
+            
             for (int i = 1; i < N_row -1; ++i){
                 temp1.copy_into(&temp2);
                 temp2.copy_into(&temp3);
                 store_neighbour_row(&temp3, i+1);
-                for (int j = 0; j < N_col; ++j) {
-                    val = data[i*N_col + j];
-                    N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                    data[i*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
-                }
+                #pragma omp parallel for
+                    for (int j = 0; j < N_col; ++j) {
+                        val = data[i*N_col + j];
+                        N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                        data[i*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
+                    }
             }
             temp1.copy_into(&temp2);
             temp2.copy_into(&temp3);
             store_bottom_ghost_neighbour_row(&temp3);
-            for (int j = 0; j < N_col; ++j) {
-                val = data[(N_row - 1)*N_col + j];
-                N_nb = temp1(j) + temp2(j) + temp3(j) - val;
-                data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
-            }
+            #pragma omp parallel for
+                for (int j = 0; j < N_col; ++j) {
+                    val = data[(N_row - 1)*N_col + j];
+                    N_nb = temp1(j) + temp2(j) + temp3(j) - val;
+                    data[(N_row - 1)*N_col + j] = (1 - val) * (N_nb == N_nb_crit) + val * (N_nb == N_nb_crit || N_nb == N_nb_crit - 1);
+                }
         }
-
 };
 
 #endif

@@ -34,7 +34,8 @@ int main(int argc, char* argv[]) {
 
     /* For this simple example, we will not do domain decomposition. 
        Therefore, the entire Grid is passed to a motherboard class. */
-    Board board(&motherboard, 0, params.board_size, 0, params.board_size);
+    Board board(motherboard.N_col, motherboard.N_row);
+    board.init_from_motherboard(&motherboard, 0, params.board_size, 0, params.board_size);
     std::string save_path = params.output_path + "step0.txt";
     board.save(save_path);
 
