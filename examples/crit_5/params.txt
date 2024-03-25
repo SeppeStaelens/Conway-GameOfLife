@@ -4,16 +4,16 @@
 
 
 board_size = 10                     # size of edge of the board. Square board implied. If reading a text file, this size has to be correct!
-N_critical = 3                      # number deciding the life and death rules. Default is 3.
+N_critical = 5                      # number deciding the life and death rules. Default is 3.
 
 save_interval = 1                   # board is saved every ... steps
-num_evolve_steps = 20               # total number of evolution cycles
+num_evolve_steps = 10               # total number of evolution cycles
 
 random_data = 1                     # if set to zero, the board in board_file will be used as starting condition.
                                     # if set to one, the board will be initialized randomly
-prob_live = 0.4                     # for random initialization, the probability for a cell to live
+prob_live = 0.6                     # for random initialization, the probability for a cell to live
 
 # board_file = example/ini.txt      # data can be read in from a text file that is white tab separated. 
                                     # Comment this line if not used.
 
-output_path = examples/simple_board/txt/          # output path for the txt files
+output_path = examples/crit_5/txt/          # output path for the txt files
