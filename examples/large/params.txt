@@ -9,7 +9,7 @@ N_critical = 3                      # number deciding the life and death rules. 
 save_interval = 10                   # board is saved every ... steps
 num_evolve_steps = 100
 
-num_threads = 1                     # number of openMP threads
+num_threads = 4                     # number of openMP threads
 
 random_data = 1                     # if set to zero, the board in board_file will be used as starting condition.
                                     # if set to one, the board will be initialized randomly
