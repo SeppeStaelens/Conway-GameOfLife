@@ -71,6 +71,7 @@ class Board : public Grid {
       bottom_ghost_row(i) = (*target)(i);
     }
   }
+
   //! Set the upper ghost row based on an input array
   /*!
       \param target The array to copy values from
@@ -82,6 +83,7 @@ class Board : public Grid {
       upper_ghost_row(i) = (*target)(i);
     }
   }
+
   //! Set the left ghost column based on an input array
   /*!
       \param target The array to copy values from
@@ -93,6 +95,7 @@ class Board : public Grid {
       left_ghost_col(i) = (*target)(i);
     }
   }
+
   //! Set the right ghost column based on an input array
   /*!
       \param target The array to copy values from
@@ -121,6 +124,7 @@ class Board : public Grid {
                           data[n_row * N_col + N_col - 1] +
                           right_ghost_col(n_row);
   }
+
   //! Store the neighbour counts of the upper ghost row in an array
   /*!
       \param store The array to store the neighbour counts in
@@ -132,6 +136,7 @@ class Board : public Grid {
           upper_ghost_row(i) + upper_ghost_row(i + 1) + upper_ghost_row(i + 2);
     }
   }
+
   //! Store the neighbour counts of the bottom ghost row in an array
   /*!
       \param store The array to store the neighbour counts in
@@ -143,6 +148,7 @@ class Board : public Grid {
                     bottom_ghost_row(i + 2);
     }
   }
+
   //! Display the board, including the ghost rows and columns
   void ghost_display() {
     upper_ghost_row.display();
@@ -155,6 +161,7 @@ class Board : public Grid {
     }
     bottom_ghost_row.display();
   }
+
   //! Update the board based on the rules of the game of life
   void update_board() {
     // Storage

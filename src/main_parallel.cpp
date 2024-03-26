@@ -1,13 +1,17 @@
-#include <mpi.h>
+//#include <mpi.h>
 #include <omp.h>
-#include <iostream>
-//#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 
+#include <cassert>
+#include <iostream>
+
+#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 #include "lib/Array1D.hpp"
 #include "lib/Board.hpp"
 #include "lib/Functions.hpp"
 #include "lib/GameParams.hpp"
 #include "lib/Grid.hpp"
+
+#define DEBUG 1
 
 int main(int argc, char *argv[]) {
   /*Create and read the parameters for this particular game.
@@ -139,6 +143,9 @@ int main(int argc, char *argv[]) {
   int board_size_x = params.board_size / d1;
   int board_size_y = params.board_size / d2;
 
+  std::cout << "\nBoard size: " << board_size_x << " x " << board_size_y
+            << std::endl;
+
   /* Now we need to select the correct sub-board at every rank.*/
   Board board(board_size_y, board_size_x);
   board.init_from_motherboard(&motherboard, co_y * board_size_y,
@@ -156,16 +163,30 @@ int main(int argc, char *argv[]) {
                           co_y * board_size_y, (co_y + 1) * board_size_y));
   board.set_right_ghost_col(&col);
 
-  Array1D row = motherboard.sub_row(
+  Array1D row(board.N_col + 2);
+  row.overwrite(
+      motherboard.sub_row(
+          (params.board_size + co_y * board_size_y - 1) % params.board_size,
+          co_x * board_size_x, (co_x + 1) * board_size_x),
+      1);
+  row(0) = motherboard(
       (params.board_size + co_y * board_size_y - 1) % params.board_size,
-      (params.board_size + co_x * board_size_x - 1) % params.board_size,
+      (params.board_size + co_x * board_size_x - 1) % params.board_size);
+  row(board.N_col + 1) = motherboard(
+      (params.board_size + co_y * board_size_y - 1) % params.board_size,
       ((co_x + 1) * board_size_x + 1) % params.board_size);
   board.set_upper_ghost_row(&row);
 
-  row.overwrite(motherboard.sub_row(
+  row.overwrite(
+      motherboard.sub_row(((co_y + 1) * board_size_y) % params.board_size,
+                          co_x * board_size_x, (co_x + 1) * board_size_x),
+      1);
+  row(0) = motherboard(
       ((co_y + 1) * board_size_y) % params.board_size,
-      (params.board_size + co_x * board_size_x - 1) % params.board_size,
-      ((co_x + 1) * board_size_x + 1) % params.board_size));
+      (params.board_size + co_x * board_size_x - 1) % params.board_size);
+  row(board.N_col + 1) =
+      motherboard(((co_y + 1) * board_size_y) % params.board_size,
+                  ((co_x + 1) * board_size_x + 1) % params.board_size);
   board.set_bottom_ghost_row(&row);
 
 #ifdef DEBUG
@@ -206,6 +227,9 @@ int main(int argc, char *argv[]) {
     board.store_col(&left_col, 0);
     board.store_col(&right_col, board.N_col - 1);
 
+    left_col.display();
+    right_col.display();
+
     /* First we send around the (ghost) columns.*/
     MPI_Isend(left_col.data, board.N_row, MPI_INT, left, 13, cartesian2d,
               &req1);
@@ -224,11 +248,6 @@ int main(int argc, char *argv[]) {
     // right << std::endl;
 
     MPI_Barrier(cartesian2d);
-
-    // std::cout << "test" << std::endl;
-
-    board.set_left_ghost_col(&rec_left_col);
-    board.set_right_ghost_col(&rec_right_col);
 
     /* We now use the NEW ghost columns to send the ghost CORNERS along with the
      * rows.*/
