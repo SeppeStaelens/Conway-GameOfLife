@@ -15,44 +15,44 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
     
     /*Create the motherboard, i.e. the overarching grid on which we play.
-      We assume it is square, and that all data can be read on one core.*/
-    Grid motherboard(params.board_size, params.board_size, params.N_critical);
+      We assume it is square, and that all data can be read on one core.
+      For this simple program, we don't do domain decomposition, and therefore initialize
+      a board class from the start.*/
+    Board board(params.board_size, params.board_size);
+    board.N_nb_crit = params.N_critical;
 
     if (params.random_data == 1) {
-      initialize_random(&motherboard, &params);
+      initialize_random(&board, &params);
     }
     else{
-      initialize_from_file(&motherboard, &params, params.board_file);
+      initialize_from_file(&board, &params, params.board_file);
     }
 
     // Display the motherboard.
     if (params.board_size <= 10 ){
       std::cout << "The motherboard." << std::endl << std::endl;
-      motherboard.display();
+      board.display();
       std::cout << std::endl; 
     }
 
-    /* For this simple example, we will not do domain decomposition. 
-       Therefore, the entire Grid is passed to a motherboard class. */
-    Board board(motherboard.N_col, motherboard.N_row);
-    board.init_from_motherboard(&motherboard, 0, params.board_size, 0, params.board_size);
+    /* Save the initial state.*/
     std::string save_path = params.output_path + "step0.txt";
     board.save(save_path);
 
     /* Given the periodic boundary conditions, we need to set the ghost rows.
        The ghost columns are easy, they are simply the first and last column.*/
-    Array1D col = motherboard.sub_col(params.board_size - 1, 0, params.board_size);
+    Array1D col = board.sub_col(params.board_size - 1, 0, params.board_size);
     board.set_left_ghost_col(&col);
 
-    col.overwrite(motherboard.sub_col(0, 0, params.board_size));
+    col.overwrite(board.sub_col(0, 0, params.board_size));
     board.set_right_ghost_col(&col);
 
     /* For the ghost rows, we need an extra step, as the ghost corners are not 
        trivially included in the upper and bottom row. This is wrapped in the periodic_row method.*/
-    Array1D row = motherboard.periodic_row(params.board_size - 1);
+    Array1D row = board.periodic_row(params.board_size - 1);
     board.set_upper_ghost_row(&row);
 
-    row.overwrite(motherboard.periodic_row(0));
+    row.overwrite(board.periodic_row(0));
     board.set_bottom_ghost_row(&row);
 
     if (params.board_size <= 10 ){

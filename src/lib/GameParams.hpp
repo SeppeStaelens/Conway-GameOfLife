@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
+//! A class that stores the parameters for the Game of Life
 class GameParams{
     public:
         
@@ -21,6 +22,8 @@ class GameParams{
 
         GameParams(){} 
 
+        //! Function that reads the parameters from a text file
+        //! \param filename path to params file, parsed through command line
         void readParams(const std::string& filename){
         
             std::ifstream inputFile(filename); // Open the text file for reading

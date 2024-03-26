@@ -20,6 +20,16 @@ build :
 	cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release
 	@echo "Done Building CMake Projects"
 
+docu :
+	@echo "Create documentation"
+	cmake --build build/release -t doxygen
+	@echo "Documentation created"
+
+tex_docu :
+	@echo "Create documentation"
+	cd docs/latex && make
+	@echo "Documentation created"
+
 clean :
 	@echo "Cleaning CMake Project"
 	rm -rf build

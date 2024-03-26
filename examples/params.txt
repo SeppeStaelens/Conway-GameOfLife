@@ -17,3 +17,5 @@ prob_live = 0.4                     # for random initialization, the probability
                                     # Comment this line if not used.
 
 output_path = example/txt/          # output path for the txt files
+
+num_threads = 4                     # number of openMP threads
