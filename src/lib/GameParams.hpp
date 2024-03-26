@@ -10,16 +10,26 @@
 class GameParams{
     public:
         
+        //! The size of the board
         int board_size {10};
+        //! The number of critical neighbours for a cell to survive
         int N_critical {3};
+        //! The interval at which the board is saved
         int save_interval {1};
+        //! The number of steps over which the board is evolved
         int evolve_steps {20};
+        //! Whether to initialize the board with random data or from a file. 1: random, 0: file (board_file)
         int random_data {1};
+        //! The number of OMP threads to use
         int num_threads {1};
+        //! The probability that a cell is alive at the start, parameter in a Binomial distribution
         double prob_live {0.5};
+        //! The path to the initialization file, in case random_data is 0
         std::string board_file {"examples/"};
+        //! The path where to store the output files
         std::string output_path {"examples/"};
 
+        //! Default constructor
         GameParams(){} 
 
         //! Function that reads the parameters from a text file
@@ -73,6 +83,7 @@ class GameParams{
             inputFile.close();
         }
 
+        //! Function that displays the parameters
         void display() const {
             std::cout << "board size: " << board_size << std::endl;
             std::cout << "N_critical: " << N_critical << std::endl;

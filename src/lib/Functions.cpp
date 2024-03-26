@@ -6,7 +6,14 @@
 
 #include "Board.hpp"
 #include "GameParams.hpp"
+#include "Grid.hpp"
+#include "Array1D.hpp"
 
+//! Initialize the board with random data
+/*!
+    \param grid The grid to be initialized
+    \param params The parameters for the game
+*/
 void initialize_random(Grid* grid, GameParams* params){
         
     // Use a random device to seed the random number engine
@@ -18,18 +25,22 @@ void initialize_random(Grid* grid, GameParams* params){
     std::bernoulli_distribution dist((*params).prob_live);
 
     // Fill the matrix with random binary numbers
+    #pragma omp parallel for collapse(2)
     for (int i = 0; i < (*params).board_size; ++i) {
         for (int j = 0; j < (*params).board_size; ++j) {
             (*grid)(i,j) = dist(gen);
         }
-    }
-    
+    }    
 
     std::cout << "Board initialized randomly." << std::endl << std::endl;
-   
 }
 
-
+//! Initialize the board from a file
+/*!
+    \param grid The grid to be initialized
+    \param params The parameters for the game
+    \param file The file to read the data from
+*/
 void initialize_from_file(Grid* grid, GameParams* params, std::string file) {
 
     std::ifstream inputFile(file);
@@ -57,6 +68,13 @@ void initialize_from_file(Grid* grid, GameParams* params, std::string file) {
     std::cout << "Board initialized from " << file << std::endl << std::endl;
 }
 
+//! Update the board for a given number of steps
+/*!
+    \param board The board to be updated
+    \param params The parameters for the game, including the number of evolve steps
+    \param store_row An array to store ghost rows
+    \param store_col An array to store ghost columns
+*/
 void iteration_one_board(Board* board, GameParams* params, Array1D* store_row, Array1D* store_col){
 
     std::string path = (*params).output_path;

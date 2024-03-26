@@ -1,10 +1,16 @@
 #include <iostream>
+#include <omp.h>
 
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
 #include "lib/Functions.hpp"
+#include "lib/Array1D.hpp"
+#include "lib/Grid.hpp"
 
 int main(int argc, char* argv[]) {
+
+    /* Turn of parallelisation.*/
+    omp_set_num_threads(1);
 
     /*Create and read the parameters for this particular game.
       The parameter file is parsed as a command line argument.*/
@@ -13,7 +19,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << "Parameters for the Game of Life:" << std::endl << std::endl;
     params.display();
     std::cout << std::endl;
-    
+
     /*Create the motherboard, i.e. the overarching grid on which we play.
       We assume it is square, and that all data can be read on one core.
       For this simple program, we don't do domain decomposition, and therefore initialize

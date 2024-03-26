@@ -6,6 +6,8 @@
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
 #include "lib/Functions.hpp"
+#include "lib/Array1D.hpp"
+#include "lib/Grid.hpp"
 
 
 int main(int argc, char* argv[]) {
@@ -116,8 +118,7 @@ int main(int argc, char* argv[]) {
 
     /* Now we need to select the correct sub-board at every rank.*/
     Board board(board_size_x, board_size_x);
-    board.init_from_motherboard(&motherboard, co_y * board_size_y, (co_y + 1) * board_size_y,
-                                              co_x * board_size_x, (co_x + 1) * board_size_x);
+    board.init_from_motherboard(&motherboard, co_y * board_size_y, co_x * board_size_x);
 
     /* Given the periodic boundary conditions, we need to set the ghost rows/columns.*/
     Array1D col = motherboard.sub_col((params.board_size + co_x * board_size_x - 1) % params.board_size, 

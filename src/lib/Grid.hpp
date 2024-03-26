@@ -41,6 +41,7 @@ class Grid{
         //! @param n_row The index of the row to be stored
         //! @param shift The shift with which the row is loaded in the Array1D object
         void store_row(Array1D* store, int n_row, int shift = 0) {
+            #pragma omp parallel for
             for (int i = 0; i < N_col; ++i) {
                 (*store)(i + shift) = data[n_row * N_col + i];
             } 
@@ -49,6 +50,7 @@ class Grid{
         //! @param store The Array1D object in which the column is to be stored
         //! @param n_col The index of the column to be stored
         void store_col(Array1D* store, int n_col) {
+            #pragma omp parallel for
             for (int i = 0; i < N_row; ++i) {
                 (*store)(i) = data[i * N_col + n_col];
             } 
@@ -117,6 +119,7 @@ class Grid{
         //! Store the data of the grid in an array
         //! @param arr The array in which the data is to be stored
         void store_data(int* arr){
+            #pragma omp parallel for
             for (int i = 0; i < size; i++){
                 arr[i] = data[i];
             }
@@ -125,6 +128,7 @@ class Grid{
         //! Read the data of the grid from an array
         //! @param arr The array from which the data is to be read
         void read_data(int* arr){
+            #pragma omp parallel for
             for (int i = 0; i < size; i++){
                 data[i] = arr[i];
             }

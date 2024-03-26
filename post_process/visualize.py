@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 ### SETTINGS ###
 
-data_path = "examples/crit_5/"
+data_path = "examples/test/"
 size = 20
 
-for i in range(0, 11):
+for i in range(0, 29):
     data_name = f"step{i}"
 
     data = pd.read_csv(data_path + "txt/" + data_name + ".txt", sep = " ", header=None)

@@ -1,3 +1,13 @@
+add_library(array_lib
+    STATIC 
+    Array1D.hpp 
+)
+
+add_library(grid_lib
+    STATIC 
+    Grid.hpp 
+)
+
 add_library(board_lib
     STATIC 
     Board.hpp 
@@ -14,6 +24,8 @@ add_library(func_lib
     Functions.hpp 
 )
 
+set_target_properties(array_lib PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(grid_lib PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(board_lib PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(params_lib PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(func_lib PROPERTIES LINKER_LANGUAGE CXX)
