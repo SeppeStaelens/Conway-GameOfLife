@@ -3,7 +3,7 @@
 #! Name of the job:
 #SBATCH -J life
 #! Which project should be charged:
-#SBATCH -A SPERHAKE-SL3-CPU
+#SBATCH -A CHANGEME
 #SBATCH -p icelake
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
@@ -45,8 +45,6 @@ options="examples/test/params.txt"
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the directory
                              # in which sbatch is run.
-
-export OMP_NUM_THREADS=4
 
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
