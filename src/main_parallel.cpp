@@ -1,10 +1,10 @@
-//#include <mpi.h>
+#include <mpi.h>
 #include <omp.h>
 
 #include <cassert>
 #include <iostream>
 
-#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+//#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 #include "lib/Array1D.hpp"
 #include "lib/Board.hpp"
 #include "lib/Functions.hpp"
