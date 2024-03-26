@@ -1,7 +1,7 @@
 #include <iostream>
 #include <omp.h>
-//#include <mpi.h>
-#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+#include <mpi.h>
+//#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
@@ -101,10 +101,10 @@ int main(int argc, char* argv[]) {
         initialize_from_file(&motherboard, &params, params.board_file);
       }
 
-// #ifdef DEBUG
+#ifdef DEBUG
       motherboard.display();
       std::cout << std::endl;
-// #endif
+#endif
 
     }
 
@@ -155,14 +155,14 @@ int main(int argc, char* argv[]) {
                                       ((co_x + 1) * board_size_x+1) % params.board_size));
     board.set_bottom_ghost_row(&row);
 
-// #ifdef DEBUG
+#ifdef DEBUG
     if (rank >= 0){
       /* Display the board with ghost cells attached.*/
       std::cout << "Processor " << rank << " with co " << co_x << ", " << co_y << " has ghost board " << std::endl;
       board.ghost_display();
       std::cout << std::endl;
     }
-// #endif
+#endif
 
     /* Create all the buffers for the communication.*/
     Array1D bottom_row_p(board.N_col + 2);
