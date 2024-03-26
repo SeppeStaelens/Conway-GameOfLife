@@ -1,14 +1,13 @@
 #include <iostream>
 #include <omp.h>
-#include <mpi.h>
-// #include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+//#include <mpi.h>
+#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 
 #include "lib/Board.hpp"
 #include "lib/GameParams.hpp"
 #include "lib/Functions.hpp"
 #include "lib/Array1D.hpp"
 #include "lib/Grid.hpp"
-
 
 int main(int argc, char* argv[]) {
 
@@ -25,13 +24,28 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &nranks);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (nranks % 2 == 1) {
-      std::cout << "Please specify an even number of MPI ranks" << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 1);
-    }
+
+    int d1 = find_opt_divisor(nranks);
+    int d2 = nranks / d1;
+
+    if (rank == 0){
+
+      std::cout << "\nNumber of OMP threads: " << params.num_threads << std::endl;
+      std::cout << "\nNumber of MPI ranks: " << nranks << std::endl;
+      std::cout << "Divisors: " << d1 << ", " << d2 << std::endl;
+
+      bool test_grid =  test_grid_parameters(params.board_size, d1, d2);
+
+      if (!test_grid) {
+        std::cout << "\nThe number of MPI ranks "<< nranks << " in combination with the board size " << params.board_size << std::endl;
+        std::cout << "does not allow for a suitable Cartesian grid communicator." << std::endl;
+        std::cout << "Please try again with different parameters, and make sure 1) that the number of MPI ranks" << std::endl;
+        std::cout << "has divisors whose ratio is smaller than 3 2) the board size is divisible by both divisors." << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+      }
 
     /* Display the parameters*/
-    if (rank == 0){
+    
       std::cout << std::endl << "Parameters for the Game of Life:" << std::endl << std::endl;
       params.display();
       std::cout << std::endl;
@@ -39,7 +53,7 @@ int main(int argc, char* argv[]) {
 
     /* Create the Cartesian communicator.*/
     MPI_Comm cartesian2d;
-    int dims[2] = {2, 2};
+    int dims[2] = {d1, d2};
     int periods[2] = {1, 1};
     int reorder = 1;
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &cartesian2d);
@@ -87,10 +101,10 @@ int main(int argc, char* argv[]) {
         initialize_from_file(&motherboard, &params, params.board_file);
       }
 
-#ifdef DEBUG
+// #ifdef DEBUG
       motherboard.display();
       std::cout << std::endl;
-#endif
+// #endif
 
     }
 
@@ -113,11 +127,13 @@ int main(int argc, char* argv[]) {
       motherboard.read_data(aux);
     }
 
-    int board_size_x = params.board_size / 2;
-    int board_size_y = params.board_size / 2;
+    int board_size_x = params.board_size / d1;
+    int board_size_y = params.board_size / d2;
+
+    std::cout << "Board size x " << board_size_x << " and y " << board_size_y << std::endl;
 
     /* Now we need to select the correct sub-board at every rank.*/
-    Board board(board_size_x, board_size_x);
+    Board board(board_size_y, board_size_x);
     board.init_from_motherboard(&motherboard, co_y * board_size_y, co_x * board_size_x);
 
     /* Given the periodic boundary conditions, we need to set the ghost rows/columns.*/
@@ -139,17 +155,16 @@ int main(int argc, char* argv[]) {
                                       ((co_x + 1) * board_size_x+1) % params.board_size));
     board.set_bottom_ghost_row(&row);
 
-#ifdef DEBUG
-    if (rank == 0  || rank == 1){
+// #ifdef DEBUG
+    if (rank >= 0){
       /* Display the board with ghost cells attached.*/
       std::cout << "Processor " << rank << " with co " << co_x << ", " << co_y << " has ghost board " << std::endl;
       board.ghost_display();
       std::cout << std::endl;
     }
-#endif
+// #endif
 
     /* Create all the buffers for the communication.*/
-
     Array1D bottom_row_p(board.N_col + 2);
     Array1D top_row_p(board.N_col + 2);
     Array1D left_col(board.N_row);
@@ -182,10 +197,16 @@ int main(int argc, char* argv[]) {
       MPI_Isend(left_col.data, board.N_row, MPI_INT, left, 13, cartesian2d, &req1);
       MPI_Isend(right_col.data, board.N_row, MPI_INT, right, 14, cartesian2d, &req2);
 
+      // std::cout << "[" << rank << "] "  << "sent to " << left << ", " << right << std::endl;
+
       MPI_Irecv(rec_right_col.data, board.N_row, MPI_INT, right, 13, cartesian2d, &req1);
       MPI_Irecv(rec_left_col.data, board.N_row, MPI_INT, left, 14, cartesian2d, &req2);
 
+      // std::cout << "[" << rank << "] "  << "received from "  << left << ", " << right << std::endl;
+
       MPI_Barrier(cartesian2d);
+
+      // std::cout << "test" << std::endl;
 
       board.set_left_ghost_col(&rec_left_col);
       board.set_right_ghost_col(&rec_right_col);

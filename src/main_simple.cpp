@@ -8,10 +8,6 @@
 #include "lib/Grid.hpp"
 
 int main(int argc, char* argv[]) {
-
-    /* Turn of parallelisation.*/
-    omp_set_num_threads(1);
-
     /*Create and read the parameters for this particular game.
       The parameter file is parsed as a command line argument.*/
     GameParams params;

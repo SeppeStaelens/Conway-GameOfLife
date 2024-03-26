@@ -102,3 +102,31 @@ void iteration_one_board(Board* board, GameParams* params, Array1D* store_row, A
     }
 
 }
+
+//! Find the largest divisor d of a number n that is smaller than sqrt(n)
+/*!
+    \param n The number to find the divisor of
+    \return The largest divisor of n that is smaller than sqrt(n)
+*/
+int find_opt_divisor(int n) {
+    double s = sqrt(n);
+    int d = floor(s);
+    while (n % d != 0) {
+        d--;
+    }
+    return d;
+}
+
+//! Test if the grid parameters allow for a suitable Cartesian grid communicator
+/*!
+    \param board_size The size of the board
+    \param d1 The first divisor
+    \param d2 The second divisor (with d2 >= d1)
+    \return True if the parameters are suitable, false otherwise
+*/
+bool test_grid_parameters(int board_size, int d1, int d2) {
+    bool test1 = (3*d1 > d2);
+    bool test2 = (board_size % d1 == 0);
+    bool test3 = (board_size % d2 == 0);
+    return (test1 && test2 && test3);
+}
