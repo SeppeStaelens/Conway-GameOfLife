@@ -38,7 +38,6 @@ I have saved following example folders:
 ## Parallelization
 
 In the parallelized code, I have made use of a 2D Cartesian communicator for the MPI. At the time of writing, this is not super flexible yet.
-- Currently, only a number of ranks equal to a perfect square works, i.e. 4, 9 or 16 ranks.
 - Based on the input number of ranks, the program looks for divisors of this number that are somewhat similar, to avoid making e.g 2x10 Cartesian grids (this is mostly personal preference at this point). For the perfect squares it simply returns the root of the number of ranks.
 - This root needs to be a divisor of the `board_size`, as the programme currently only supports subgrids of equal size.
 

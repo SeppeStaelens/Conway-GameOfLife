@@ -35,7 +35,7 @@ class Grid {
 
   //! Overload the () operator to access the data
   int& operator()(int i, int j) { return this->data[i * N_col + j]; }
-  
+
   //! Store a row of the grid in an Array1D object
   //! @param store The Array1D object in which the row is to be stored
   //! @param n_row The index of the row to be stored

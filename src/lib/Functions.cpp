@@ -1,3 +1,5 @@
+#include "Functions.hpp"
+
 #include <omp.h>
 
 #include <fstream>
@@ -9,7 +11,6 @@
 #include "Board.hpp"
 #include "GameParams.hpp"
 #include "Grid.hpp"
-#include "Functions.hpp"
 
 //! Initialize the board with random data
 /*!
@@ -43,7 +44,8 @@ void functions::initialize_random(Grid* grid, GameParams* params) {
     \param params The parameters for the game
     \param file The file to read the data from
 */
-void functions::initialize_from_file(Grid* grid, GameParams* params, std::string file) {
+void functions::initialize_from_file(Grid* grid, GameParams* params,
+                                     std::string file) {
   std::ifstream inputFile(file);
 
   if (!inputFile) {
@@ -75,8 +77,8 @@ void functions::initialize_from_file(Grid* grid, GameParams* params, std::string
    steps \param store_row An array to store ghost rows \param store_col An array
    to store ghost columns
 */
-void functions::iteration_one_board(Board* board, GameParams* params, Array1D* store_row,
-                         Array1D* store_col) {
+void functions::iteration_one_board(Board* board, GameParams* params,
+                                    Array1D* store_row, Array1D* store_col) {
   std::string path = (*params).output_path;
 
   std::cout << "Starting updating iteration." << std::endl;
@@ -84,12 +86,9 @@ void functions::iteration_one_board(Board* board, GameParams* params, Array1D* s
   for (int i = 1; i <= (*params).evolve_steps; i++) {
     (*board).update_board();
 
-    
-
     (*store_col)
-        .overwrite((*board).sub_col((*board).N_col - 1, 0,
-                                    (*board).N_row));
-                                    
+        .overwrite((*board).sub_col((*board).N_col - 1, 0, (*board).N_row));
+
     (*board).set_left_ghost_col(store_col);
     (*store_col).overwrite((*board).sub_col(0, 0, (*board).N_row));
     (*board).set_right_ghost_col(store_col);

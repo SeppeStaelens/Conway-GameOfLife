@@ -16,7 +16,7 @@ class Array1D {
     this->size = size;
     this->data = new int[size];
   }
-  
+
   //! Destructor
   ~Array1D() { delete[] this->data; }
 

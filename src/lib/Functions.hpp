@@ -17,6 +17,6 @@ int find_opt_divisor(int n);
 
 bool test_grid_parameters(int board_size, int d1, int d2);
 
-}
+}  // namespace functions
 
 #endif
