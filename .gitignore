@@ -12,6 +12,7 @@ step*.txt
 examples/Gosper_glider_gun/png/*
 jobscript
 machine.file*
+docs/html/*
 docs/latex/*
 !docs/latex/refman.pdf
 examples/test/*
