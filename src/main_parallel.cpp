@@ -143,8 +143,10 @@ int main(int argc, char *argv[]) {
   int board_size_x = params.board_size / d1;
   int board_size_y = params.board_size / d2;
 
+#ifdef DEBUG
   std::cout << "\nBoard size: " << board_size_x << " x " << board_size_y
             << std::endl;
+#endif
 
   /* Now we need to select the correct sub-board at every rank.*/
   Board board(board_size_y, board_size_x);

@@ -17,3 +17,4 @@ docs/latex/*
 !docs/latex/refman.pdf
 examples/test/*
 docs/Doxyfile
+post_process/performance.py
