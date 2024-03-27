@@ -9,13 +9,14 @@
 #include "Board.hpp"
 #include "GameParams.hpp"
 #include "Grid.hpp"
+#include "Functions.hpp"
 
 //! Initialize the board with random data
 /*!
     \param grid The grid to be initialized
     \param params The parameters for the game
 */
-void initialize_random(Grid* grid, GameParams* params) {
+void functions::initialize_random(Grid* grid, GameParams* params) {
   // Use a random device to seed the random number engine
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -42,7 +43,7 @@ void initialize_random(Grid* grid, GameParams* params) {
     \param params The parameters for the game
     \param file The file to read the data from
 */
-void initialize_from_file(Grid* grid, GameParams* params, std::string file) {
+void functions::initialize_from_file(Grid* grid, GameParams* params, std::string file) {
   std::ifstream inputFile(file);
 
   if (!inputFile) {
@@ -74,7 +75,7 @@ void initialize_from_file(Grid* grid, GameParams* params, std::string file) {
    steps \param store_row An array to store ghost rows \param store_col An array
    to store ghost columns
 */
-void iteration_one_board(Board* board, GameParams* params, Array1D* store_row,
+void functions::iteration_one_board(Board* board, GameParams* params, Array1D* store_row,
                          Array1D* store_col) {
   std::string path = (*params).output_path;
 
@@ -107,7 +108,7 @@ void iteration_one_board(Board* board, GameParams* params, Array1D* store_row,
     \param n The number to find the divisor of
     \return The largest divisor of n that is smaller than sqrt(n)
 */
-int find_opt_divisor(int n) {
+int functions::find_opt_divisor(int n) {
   double s = sqrt(n);
   int d = floor(s);
   while (n % d != 0) {
@@ -123,7 +124,7 @@ int find_opt_divisor(int n) {
     \param d2 The second divisor (with d2 >= d1)
     \return True if the parameters are suitable, false otherwise
 */
-bool test_grid_parameters(int board_size, int d1, int d2) {
+bool functions::test_grid_parameters(int board_size, int d1, int d2) {
   bool test1 = (3 * d1 > d2);
   bool test2 = (board_size % d1 == 0);
   bool test3 = (board_size % d2 == 0);

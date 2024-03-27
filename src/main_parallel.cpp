@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &nranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  int d1 = find_opt_divisor(nranks);
+  int d1 = functions::find_opt_divisor(nranks);
   int d2 = nranks / d1;
 
   if (rank == 0) {
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\nNumber of MPI ranks: " << nranks << std::endl;
     std::cout << "Divisors: " << d1 << ", " << d2 << std::endl;
 
-    bool test_grid = test_grid_parameters(params.board_size, d1, d2);
+    bool test_grid = functions::test_grid_parameters(params.board_size, d1, d2);
 
     if (!test_grid) {
       std::cout << "\nThe number of MPI ranks " << nranks
@@ -110,9 +110,9 @@ int main(int argc, char *argv[]) {
 
   if (rank == 0) {
     if (params.random_data == 1) {
-      initialize_random(&motherboard, &params);
+      functions::initialize_random(&motherboard, &params);
     } else {
-      initialize_from_file(&motherboard, &params, params.board_file);
+      functions::initialize_from_file(&motherboard, &params, params.board_file);
     }
 
 #ifdef DEBUG

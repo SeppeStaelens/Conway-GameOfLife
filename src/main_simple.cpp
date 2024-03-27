@@ -27,9 +27,9 @@ int main(int argc, char* argv[]) {
   board.N_nb_crit = params.N_critical;
 
   if (params.random_data == 1) {
-    initialize_random(&board, &params);
+    functions::initialize_random(&board, &params);
   } else {
-    initialize_from_file(&board, &params, params.board_file);
+    functions::initialize_from_file(&board, &params, params.board_file);
   }
 
   // Display the motherboard.
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
   /* Actual iteration of the update procedure.
      row and col are passed as fixed storage containers.*/
-  iteration_one_board(&board, &params, &row, &col);
+  functions::iteration_one_board(&board, &params, &row, &col);
 
   return 0;
 }
