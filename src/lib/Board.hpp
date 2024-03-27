@@ -91,7 +91,7 @@ class Board : public Grid {
   void set_left_ghost_col(Array1D* target) {
     assert(target->size == N_row);
 #pragma omp parallel for
-    for (int i = 0; i < N_col; ++i) {
+    for (int i = 0; i < N_row; ++i) {
       left_ghost_col(i) = (*target)(i);
     }
   }
@@ -103,7 +103,7 @@ class Board : public Grid {
   void set_right_ghost_col(Array1D* target) {
     assert(target->size == N_row);
 #pragma omp parallel for
-    for (int i = 0; i < N_col; ++i) {
+    for (int i = 0; i < N_row; ++i) {
       right_ghost_col(i) = (*target)(i);
     }
   }

@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include <iostream>
 
 #include "lib/Array1D.hpp"
@@ -23,6 +21,7 @@ int main(int argc, char* argv[]) {
     We assume it is square, and that all data can be read on one core.
     For this simple program, we don't do domain decomposition, and therefore
     initialize a board class from the start.*/
+  // Board board(params.board_size, params.board_size);
   Board board(params.board_size, params.board_size);
   board.N_nb_crit = params.N_critical;
 
@@ -45,16 +44,16 @@ int main(int argc, char* argv[]) {
 
   /* Given the periodic boundary conditions, we need to set the ghost rows.
      The ghost columns are easy, they are simply the first and last column.*/
-  Array1D col = board.sub_col(params.board_size - 1, 0, params.board_size);
+  Array1D col = board.sub_col(board.N_col - 1, 0, board.N_row);
   board.set_left_ghost_col(&col);
 
-  col.overwrite(board.sub_col(0, 0, params.board_size));
+  col.overwrite(board.sub_col(0, 0, board.N_row));
   board.set_right_ghost_col(&col);
 
   /* For the ghost rows, we need an extra step, as the ghost corners are not
      trivially included in the upper and bottom row. This is wrapped in the
      periodic_row method.*/
-  Array1D row = board.periodic_row(params.board_size - 1);
+  Array1D row = board.periodic_row(board.N_row - 1);
   board.set_upper_ghost_row(&row);
 
   row.overwrite(board.periodic_row(0));

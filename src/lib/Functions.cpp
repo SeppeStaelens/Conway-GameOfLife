@@ -28,8 +28,8 @@ void functions::initialize_random(Grid* grid, GameParams* params) {
 
 // Fill the matrix with random binary numbers
 #pragma omp parallel for collapse(2)
-  for (int i = 0; i < (*params).board_size; ++i) {
-    for (int j = 0; j < (*params).board_size; ++j) {
+  for (int i = 0; i < (*grid).N_row; ++i) {
+    for (int j = 0; j < (*grid).N_col; ++j) {
       (*grid)(i, j) = dist(gen);
     }
   }
@@ -84,14 +84,17 @@ void functions::iteration_one_board(Board* board, GameParams* params, Array1D* s
   for (int i = 1; i <= (*params).evolve_steps; i++) {
     (*board).update_board();
 
+    
+
     (*store_col)
-        .overwrite((*board).sub_col((*params).board_size - 1, 0,
-                                    (*params).board_size));
+        .overwrite((*board).sub_col((*board).N_col - 1, 0,
+                                    (*board).N_row));
+                                    
     (*board).set_left_ghost_col(store_col);
-    (*store_col).overwrite((*board).sub_col(0, 0, (*params).board_size));
+    (*store_col).overwrite((*board).sub_col(0, 0, (*board).N_row));
     (*board).set_right_ghost_col(store_col);
 
-    (*store_row).overwrite((*board).periodic_row((*params).board_size - 1));
+    (*store_row).overwrite((*board).periodic_row((*board).N_row - 1));
     (*board).set_upper_ghost_row(store_row);
     (*store_row).overwrite((*board).periodic_row(0));
     (*board).set_bottom_ghost_row(store_row);

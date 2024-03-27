@@ -16,8 +16,10 @@ class Array1D {
     this->size = size;
     this->data = new int[size];
   }
+  
   //! Destructor
   ~Array1D() { delete[] this->data; }
+
   //! Overload the () operator to access the data
   int& operator()(int i) { return this->data[i]; }
 

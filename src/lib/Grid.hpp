@@ -32,18 +32,22 @@ class Grid {
   }
   //! Destructor
   ~Grid() { delete[] this->data; }
+
   //! Overload the () operator to access the data
   int& operator()(int i, int j) { return this->data[i * N_col + j]; }
+  
   //! Store a row of the grid in an Array1D object
   //! @param store The Array1D object in which the row is to be stored
   //! @param n_row The index of the row to be stored
   //! @param shift The shift with which the row is loaded in the Array1D object
+
   void store_row(Array1D* store, int n_row, int shift = 0) {
 #pragma omp parallel for
     for (int i = 0; i < N_col; ++i) {
       (*store)(i + shift) = data[n_row * N_col + i];
     }
   }
+
   //! Store a column of the grid in an Array1D object
   //! @param store The Array1D object in which the column is to be stored
   //! @param n_col The index of the column to be stored

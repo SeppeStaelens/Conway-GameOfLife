@@ -11,7 +11,7 @@
 #include "lib/GameParams.hpp"
 #include "lib/Grid.hpp"
 
-#define DEBUG 1
+// #define DEBUG 1
 
 int main(int argc, char *argv[]) {
   /*Create and read the parameters for this particular game.
@@ -228,9 +228,6 @@ int main(int argc, char *argv[]) {
     board.store_row(&top_row_p, 0, 1);
     board.store_col(&left_col, 0);
     board.store_col(&right_col, board.N_col - 1);
-
-    left_col.display();
-    right_col.display();
 
     /* First we send around the (ghost) columns.*/
     MPI_Isend(left_col.data, board.N_row, MPI_INT, left, 13, cartesian2d,
