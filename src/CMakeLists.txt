@@ -3,8 +3,8 @@ add_subdirectory(lib)
 add_executable(play_simple main_simple.cpp)
 add_executable(play_para main_parallel.cpp)
 
-ClangFormat(play_simple .)
-ClangFormat(play_para .)
+#ClangFormat(play_simple .)
+#ClangFormat(play_para .)
 
 target_link_libraries(play_simple PRIVATE params_lib)
 target_link_libraries(play_simple PRIVATE array_lib)

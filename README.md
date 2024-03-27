@@ -29,6 +29,12 @@ All the parameters for the code should be given in a `params.txt` file, for whic
 - In the case that the game is initialized from a file (`random_data = 0`), the `board_size` should match the actual board size in the `board_file`.
 - The `output_path` should exist, prior to running the code, as mentioned above.
 
+I have saved following example folders:
+- Gosper glider gun
+- `spaceship` (the glider)
+- `simple_board` which is just a small randomly initialized board.
+- `large`: a folder in which I saved large grids of length $\mathcal{O}(1000)$.
+- `crit_5`, in which I experimented with `N_critical = 5`.
 ## Parallelization
 
 In the parallelized code, I have made use of a 2D Cartesian communicator for the MPI. At the time of writing, this is not super flexible yet.
