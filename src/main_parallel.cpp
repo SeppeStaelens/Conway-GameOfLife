@@ -1,10 +1,11 @@
-//#include <mpi.h>
+#include <mpi.h>
 #include <omp.h>
 
 #include <cassert>
 #include <iostream>
 
-#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+//Below needed for correct rendering on my laptop
+//#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 #include "lib/Array1D.hpp"
 #include "lib/Board.hpp"
 #include "lib/Functions.hpp"
@@ -153,13 +154,18 @@ int main(int argc, char *argv[]) {
             << std::endl;
 #endif
 
-  /* Now we need to select the correct sub-board at every rank.*/
+  /* 
+  Now we need to select the correct sub-board at every rank.
+  */
   Board board(board_size_y, board_size_x);
   board.init_from_motherboard(&motherboard, co_y * board_size_y,
                               co_x * board_size_x);
 
-  /* Given the periodic boundary conditions, we need to set the ghost
-   * rows/columns.*/
+  /* 
+  Given the periodic boundary conditions, we need to set the ghost
+  rows/columns. This looks involved, but the expressions are simply lengthy
+  due to the coordinates induced by the Cartesian communicator.
+  */
   Array1D col = motherboard.sub_col(
       (params.board_size + co_x * board_size_x - 1) % params.board_size,
       co_y * board_size_y, (co_y + 1) * board_size_y);
@@ -206,25 +212,22 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  /* Create all the buffers for the communication.*/
+  /* 
+  Create the buffers for the communication.
+  */
   Array1D bottom_row_p(board.N_col + 2);
   Array1D top_row_p(board.N_col + 2);
   Array1D left_col(board.N_row);
   Array1D right_col(board.N_row);
 
-  Array1D rec_bottom_row_p(board.N_col + 2);
-  Array1D rec_top_row_p(board.N_col + 2);
-  Array1D rec_left_col(board.N_row);
-  Array1D rec_right_col(board.N_row);
-
   MPI_Request req1, req2, req3, req4;
 
-  /* Create storage for boards that rank 0 will receive.*/
+  /* 
+  Create storage for boards that rank 0 will receive.
+  */
   int store_board[board.size];
   int r_co_x, r_co_y;
   MPI_Status status;
-
-  MPI_Barrier(cartesian2d);
 
   for (int i = 1; i < params.evolve_steps + 1; i++) {
 #ifdef DEBUG
@@ -248,15 +251,12 @@ int main(int argc, char *argv[]) {
     MPI_Isend(right_col.data, board.N_row, MPI_INT, right, 14, cartesian2d,
               &req2);
 
-    MPI_Irecv(rec_right_col.data, board.N_row, MPI_INT, right, 13, cartesian2d,
+    MPI_Irecv(board.right_ghost_col.data, board.N_row, MPI_INT, right, 13, cartesian2d,
               &req1);
-    MPI_Irecv(rec_left_col.data, board.N_row, MPI_INT, left, 14, cartesian2d,
+    MPI_Irecv(board.left_ghost_col.data, board.N_row, MPI_INT, left, 14, cartesian2d,
               &req2);
 
     MPI_Barrier(cartesian2d);
-
-    board.set_left_ghost_col(&rec_left_col);
-    board.set_right_ghost_col(&rec_right_col);
 
     /* We now use the NEW ghost columns to send the ghost CORNERS along with the
      * rows.*/
@@ -272,17 +272,16 @@ int main(int argc, char *argv[]) {
     MPI_Isend(top_row_p.data, board.N_col + 2, MPI_INT, up, 12, cartesian2d,
               &req4);
 
-    MPI_Irecv(rec_top_row_p.data, board.N_col + 2, MPI_INT, up, 11, cartesian2d,
+    MPI_Irecv(board.upper_ghost_row.data, board.N_col + 2, MPI_INT, up, 11, cartesian2d,
               &req3);
-    MPI_Irecv(rec_bottom_row_p.data, board.N_col + 2, MPI_INT, down, 12,
+    MPI_Irecv(board.bottom_ghost_row.data, board.N_col + 2, MPI_INT, down, 12,
               cartesian2d, &req4);
 
     MPI_Barrier(cartesian2d);
 
-    board.set_bottom_ghost_row(&rec_bottom_row_p);
-    board.set_upper_ghost_row(&rec_top_row_p);
-
-    /* If we need to save the grid, communicate everything to rank 0.*/
+    /* 
+    If we need to save the grid, communicate everything to rank 0.
+    */
     if (i % params.save_interval == 0) {
       if (rank != 0) {
         MPI_Send(board.data, board.size, MPI_INT, 0, 20, cartesian2d);
