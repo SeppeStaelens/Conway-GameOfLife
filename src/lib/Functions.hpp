@@ -1,10 +1,10 @@
 #ifndef FUNCTIONS_HPP
 #define FUNCTIONS_HPP
 
+#include <tuple>
+
 #include "Board.hpp"
 #include "GameParams.hpp"
-
-#include <tuple>
 
 namespace functions {
 

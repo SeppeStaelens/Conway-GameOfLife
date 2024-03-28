@@ -5,7 +5,7 @@
 #include <iostream>
 #include <tuple>
 
-//Below needed for correct rendering on my laptop
+// Below needed for correct rendering on my laptop
 //#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 #include "lib/Array1D.hpp"
 #include "lib/Board.hpp"
@@ -16,7 +16,6 @@
 // #define DEBUG
 
 int main(int argc, char *argv[]) {
-
   /*
   Create and read the parameters for this particular game.
     The parameter file is parsed as a command line argument.
@@ -24,7 +23,7 @@ int main(int argc, char *argv[]) {
   GameParams params;
   params.readParams(argv[1]);
 
-  /* 
+  /*
   Parallelisation.
   */
   omp_set_num_threads(params.num_threads);
@@ -40,11 +39,11 @@ int main(int argc, char *argv[]) {
   int d1, d2;
 
   if (rank == 0) {
-    
     std::tie(d1, d2) = functions::find_Cart_dim(params.board_size, nranks);
 
     std::cout << "\nNumber of OMP threads: " << params.num_threads << std::endl;
-    std::cout << "Number of MPI ranks: " << nranks << " = " << d1 << " x " << d2 << std::endl;
+    std::cout << "Number of MPI ranks: " << nranks << " = " << d1 << " x " << d2
+              << std::endl;
 
     // Display the parameters
     std::cout << std::endl
@@ -57,7 +56,7 @@ int main(int argc, char *argv[]) {
   MPI_Bcast(&d1, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&d2, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  /* 
+  /*
   Create the Cartesian communicator.
   */
   MPI_Comm cartesian2d;
@@ -66,7 +65,7 @@ int main(int argc, char *argv[]) {
   int reorder = 1;
   MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &cartesian2d);
 
-  /* 
+  /*
   Storing the coordinates of all the ranks.
   */
   int coords[2 * nranks];
@@ -112,7 +111,6 @@ int main(int argc, char *argv[]) {
   Grid motherboard(params.board_size, params.board_size, params.N_critical);
   std::string path;
 
-
   if (rank == 0) {
     if (params.random_data == 1) {
       functions::initialize_random(&motherboard, &params);
@@ -128,7 +126,7 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  /* 
+  /*
   Now we broadcast this motherboard to the other ranks.
   */
 
@@ -136,20 +134,21 @@ int main(int argc, char *argv[]) {
 
   int board_size_x = params.board_size / d1;
   int board_size_y = params.board_size / d2;
-  
-  if (rank == 0){
-    std::cout << "Board size induced by the " << d1 << " x " << d2 << " Cartesian communicator: " << board_size_x << " x " << board_size_y
-              << std::endl;
+
+  if (rank == 0) {
+    std::cout << "Board size induced by the " << d1 << " x " << d2
+              << " Cartesian communicator: " << board_size_x << " x "
+              << board_size_y << std::endl;
   }
 
-  /* 
+  /*
   Now we need to select the correct sub-board at every rank.
   */
   Board board(board_size_y, board_size_x);
   board.init_from_motherboard(&motherboard, co_y * board_size_y,
                               co_x * board_size_x);
 
-  /* 
+  /*
   Given the periodic boundary conditions, we need to set the ghost
   rows/columns. This looks involved, but the expressions are simply lengthy
   due to the coordinates induced by the Cartesian communicator.
@@ -200,7 +199,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  /* 
+  /*
   Create the buffers for the communication.
   */
   Array1D bottom_row_p(board.N_col + 2);
@@ -210,7 +209,7 @@ int main(int argc, char *argv[]) {
 
   MPI_Request req1, req2, req3, req4;
 
-  /* 
+  /*
   Create storage for boards that rank 0 will receive.
   */
   int store_board[board.size];
@@ -219,11 +218,11 @@ int main(int argc, char *argv[]) {
 
   for (int i = 1; i < params.evolve_steps + 1; i++) {
 #ifdef DEBUG
-    if (rank == 0 || rank == 2){
+    if (rank == 0 || rank == 2) {
       std::cout << "Rank " << rank << " is at step " << i << std::endl;
     }
-#endif    
-    
+#endif
+
     /* Update board.*/
     board.update_board();
 
@@ -239,10 +238,10 @@ int main(int argc, char *argv[]) {
     MPI_Isend(right_col.data, board.N_row, MPI_INT, right, 14, cartesian2d,
               &req2);
 
-    MPI_Irecv(board.right_ghost_col.data, board.N_row, MPI_INT, right, 13, cartesian2d,
-              &req1);
-    MPI_Irecv(board.left_ghost_col.data, board.N_row, MPI_INT, left, 14, cartesian2d,
-              &req2);
+    MPI_Irecv(board.right_ghost_col.data, board.N_row, MPI_INT, right, 13,
+              cartesian2d, &req1);
+    MPI_Irecv(board.left_ghost_col.data, board.N_row, MPI_INT, left, 14,
+              cartesian2d, &req2);
 
     MPI_Barrier(cartesian2d);
 
@@ -260,14 +259,14 @@ int main(int argc, char *argv[]) {
     MPI_Isend(top_row_p.data, board.N_col + 2, MPI_INT, up, 12, cartesian2d,
               &req4);
 
-    MPI_Irecv(board.upper_ghost_row.data, board.N_col + 2, MPI_INT, up, 11, cartesian2d,
-              &req3);
+    MPI_Irecv(board.upper_ghost_row.data, board.N_col + 2, MPI_INT, up, 11,
+              cartesian2d, &req3);
     MPI_Irecv(board.bottom_ghost_row.data, board.N_col + 2, MPI_INT, down, 12,
               cartesian2d, &req4);
 
     MPI_Barrier(cartesian2d);
 
-    /* 
+    /*
     If we need to save the grid, communicate everything to rank 0.
     */
     if (i % params.save_interval == 0) {
@@ -304,7 +303,6 @@ int main(int argc, char *argv[]) {
 
         path = params.output_path + "step" + std::to_string(i) + ".txt";
         motherboard.save(path);
-
       }
     }
   }
