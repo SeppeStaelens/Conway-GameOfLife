@@ -23,6 +23,12 @@ $ mpirun -n 4 bin/play_simple examples/Gosper_glider_gun/params.txt
 ```
 where in this case the number of MPI ranks is chosen to be 4. This can be adapted (however, see below under parallelization).
 
+A couple of unit tests can be run as
+```bash
+$ ctest --test-dir build/release
+```
+to ensure the code is working.
+
 ## Parameter file
 
 All the parameters for the code should be given in a `params.txt` file, for which examples can be found in `examples/`. The parameters should be self-explanatory, though there are two important things:
@@ -37,13 +43,14 @@ I have saved following example folders:
 - `crit_5`, in which I experimented with `N_critical = 5`.
 ## Parallelization
 
-In the parallelized code, I have made use of a 2D Cartesian communicator for the MPI. At the time of writing, this is not super flexible yet.
-- Based on the input number of ranks, the program looks for divisors of this number that are somewhat similar, to avoid making e.g 2x10 Cartesian grids (this is mostly personal preference at this point). For the perfect squares it simply returns the root of the number of ranks.
-- This root needs to be a divisor of the `board_size`, as the programme currently only supports subgrids of equal size.
+In the parallelized code, I have made use of a 2D Cartesian communicator for the MPI. 
+It can take many different values for the number of ranks, but there is the following two requirements:
+- The number of ranks $N$ should be factorizable as $N = a \times b$, where $a,b$ are both divisors of `board_size`, i.e. the width of the board. 
+- Furthermore, both $a$ and $b$ need to be smaller than the board size.
 
-The foundations are in the code to extend this to be more flexible, but there are still MPI bugs at the moment.
+The reason is that the programme divides the grid into subgrids, which at this point have to be of equal size. Due to the Cartesian topology, the requirement follows. The second requirement is simply due to the implementation of the iterative procedure, which does not handle one-dimensional or single-cell boards.
 
-OpenMP parallelization is handled in the `params.txt` file, where the number of openMP threads can be indicated.
+OpenMP parallelization is handled in the `params.txt` file, where the number of openMP threads can be indicated. However, openMP parallelisation is not yet optimised at the moment, and seems to slow the code down for the grids I tested. Very large grids could potentially experience a speed-up.
 
 ## Supercomputer
 
