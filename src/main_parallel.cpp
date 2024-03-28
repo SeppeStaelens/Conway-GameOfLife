@@ -14,12 +14,17 @@
 // #define DEBUG
 
 int main(int argc, char *argv[]) {
-  /*Create and read the parameters for this particular game.
-    The parameter file is parsed as a command line argument.*/
+
+  /*
+  Create and read the parameters for this particular game.
+    The parameter file is parsed as a command line argument.
+    */
   GameParams params;
   params.readParams(argv[1]);
 
-  /* Parallelisation.*/
+  /* 
+  Parallelisation.
+  */
   omp_set_num_threads(params.num_threads);
 
   MPI_Init(&argc, &argv);
@@ -27,12 +32,15 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &nranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  /*
+  Determine the dimensions of the Cartesian communicator
+  */
   int d1 = functions::find_opt_divisor(nranks);
   int d2 = nranks / d1;
 
   if (rank == 0) {
     std::cout << "\nNumber of OMP threads: " << params.num_threads << std::endl;
-    std::cout << "\nNumber of MPI ranks: " << nranks << std::endl;
+    std::cout << "Number of MPI ranks: " << nranks << std::endl;
     std::cout << "Divisors: " << d1 << ", " << d2 << std::endl;
 
     bool test_grid = functions::test_grid_parameters(params.board_size, d1, d2);
@@ -52,8 +60,7 @@ int main(int argc, char *argv[]) {
       MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    /* Display the parameters*/
-
+    // Display the parameters
     std::cout << std::endl
               << "Parameters for the Game of Life:" << std::endl
               << std::endl;
@@ -61,17 +68,22 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
   }
 
-  /* Create the Cartesian communicator.*/
+  /* 
+  Create the Cartesian communicator.
+  */
   MPI_Comm cartesian2d;
   int dims[2] = {d1, d2};
   int periods[2] = {1, 1};
   int reorder = 1;
   MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &cartesian2d);
 
-  /* Store the coordinates of all the ranks on rank 0.*/
+  /* 
+  Storing the coordinates of all the ranks.
+  */
   int coords[2 * nranks];
   int coord2d[2];
 
+  // Store all on rank 0
   if (rank == 0) {
     for (int i = 0; i < nranks; i++) {
       MPI_Cart_coords(cartesian2d, i, 2, coord2d);
@@ -84,7 +96,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  /* Store the coordinates of the rank.*/
+  // Store the coordinates of the current rank.
   MPI_Cart_coords(cartesian2d, rank, 2, coord2d);
   int co_x = coord2d[0];
   int co_y = coord2d[1];
@@ -102,11 +114,15 @@ int main(int argc, char *argv[]) {
             << " has up/down neighbours " << up << " and " << down << std::endl;
 #endif
 
-  /*Create the motherboard, i.e. the overarching grid on which we play.
-    We assume it is square, and that all data can be read on one core.
-    We initialize it on rank 0.*/
+  /*
+  Create the motherboard, i.e. the overarching grid on which we play.
+  We assume it is square, and that all data can be read on one core.
+  We initialize it on rank 0.
+  */
 
   Grid motherboard(params.board_size, params.board_size, params.N_critical);
+  std::string path;
+
 
   if (rank == 0) {
     if (params.random_data == 1) {
@@ -114,6 +130,8 @@ int main(int argc, char *argv[]) {
     } else {
       functions::initialize_from_file(&motherboard, &params, params.board_file);
     }
+    path = params.output_path + "step0.txt";
+    motherboard.save(path);
 
 #ifdef DEBUG
     motherboard.display();
@@ -121,24 +139,11 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  /* Now we create broadcast this motherboard to the other ranks.
-     We need an auxiliary list to send all the integers around, however.
-     On rank 0, this auxiliary array gets the motherboard data.*/
-  int aux[motherboard.size];
-  std::string path;
+  /* 
+  Now we broadcast this motherboard to the other ranks.
+  */
 
-  if (rank == 0) {
-    motherboard.store_data(aux);
-    path = params.output_path + "step0.txt";
-    motherboard.save(path);
-  }
-
-  MPI_Bcast(&aux, motherboard.size, MPI_INT, 0, cartesian2d);
-
-  /* On the other ranks, the motherboard gets initialized with this list*/
-  if (rank != 0) {
-    motherboard.read_data(aux);
-  }
+  MPI_Bcast(motherboard.data, motherboard.size, MPI_INT, 0, cartesian2d);
 
   int board_size_x = params.board_size / d1;
   int board_size_y = params.board_size / d2;
@@ -236,26 +241,17 @@ int main(int argc, char *argv[]) {
     board.store_row(&top_row_p, 0, 1);
     board.store_col(&left_col, 0);
     board.store_col(&right_col, board.N_col - 1);
-    
+
     /* First we send around the (ghost) columns.*/
     MPI_Isend(left_col.data, board.N_row, MPI_INT, left, 13, cartesian2d,
               &req1);
     MPI_Isend(right_col.data, board.N_row, MPI_INT, right, 14, cartesian2d,
               &req2);
 
-    // MPI_Barrier(cartesian2d);
-
-
-    // std::cout << "[" << rank << "] "  << "sent to " << left << ", " << right
-    // << std::endl;
-
     MPI_Irecv(rec_right_col.data, board.N_row, MPI_INT, right, 13, cartesian2d,
               &req1);
     MPI_Irecv(rec_left_col.data, board.N_row, MPI_INT, left, 14, cartesian2d,
               &req2);
-
-    // std::cout << "[" << rank << "] "  << "received from "  << left << ", " <<
-    // right << std::endl;
 
     MPI_Barrier(cartesian2d);
 
@@ -264,7 +260,6 @@ int main(int argc, char *argv[]) {
 
     /* We now use the NEW ghost columns to send the ghost CORNERS along with the
      * rows.*/
-
     bottom_row_p(0) = board.left_ghost_col(board.N_row - 1);
     bottom_row_p(board.N_col + 1) = board.right_ghost_col(board.N_row - 1);
 
@@ -287,16 +282,7 @@ int main(int argc, char *argv[]) {
     board.set_bottom_ghost_row(&rec_bottom_row_p);
     board.set_upper_ghost_row(&rec_top_row_p);
 
-#ifdef DEBUG
-  if (rank == 0 || rank == 2) {
-    /* Display the board with ghost cells attached.*/
-    std::cout << "Processor " << rank << " with co " << co_x << ", " << co_y
-              << " has ghost board " << std::endl;
-    board.ghost_display();
-    std::cout << std::endl;
-  }
-#endif
-
+    /* If we need to save the grid, communicate everything to rank 0.*/
     if (i % params.save_interval == 0) {
       if (rank != 0) {
         MPI_Send(board.data, board.size, MPI_INT, 0, 20, cartesian2d);
