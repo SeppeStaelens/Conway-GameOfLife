@@ -1,17 +1,17 @@
-#include <mpi.h>
+//#include <mpi.h>
 #include <omp.h>
 
 #include <cassert>
 #include <iostream>
 
-//#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
+#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
 #include "lib/Array1D.hpp"
 #include "lib/Board.hpp"
 #include "lib/Functions.hpp"
 #include "lib/GameParams.hpp"
 #include "lib/Grid.hpp"
 
-// #define DEBUG 1
+// #define DEBUG
 
 int main(int argc, char *argv[]) {
   /*Create and read the parameters for this particular game.
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
   board.set_bottom_ghost_row(&row);
 
 #ifdef DEBUG
-  if (rank >= 0) {
+  if (rank == 0 || rank == 2) {
     /* Display the board with ghost cells attached.*/
     std::cout << "Processor " << rank << " with co " << co_x << ", " << co_y
               << " has ghost board " << std::endl;
@@ -219,7 +219,15 @@ int main(int argc, char *argv[]) {
   int r_co_x, r_co_y;
   MPI_Status status;
 
+  MPI_Barrier(cartesian2d);
+
   for (int i = 1; i < params.evolve_steps + 1; i++) {
+#ifdef DEBUG
+    if (rank == 0 || rank == 2){
+      std::cout << "Rank " << rank << " is at step " << i << std::endl;
+    }
+#endif    
+    
     /* Update board.*/
     board.update_board();
 
@@ -228,12 +236,15 @@ int main(int argc, char *argv[]) {
     board.store_row(&top_row_p, 0, 1);
     board.store_col(&left_col, 0);
     board.store_col(&right_col, board.N_col - 1);
-
+    
     /* First we send around the (ghost) columns.*/
     MPI_Isend(left_col.data, board.N_row, MPI_INT, left, 13, cartesian2d,
               &req1);
     MPI_Isend(right_col.data, board.N_row, MPI_INT, right, 14, cartesian2d,
               &req2);
+
+    // MPI_Barrier(cartesian2d);
+
 
     // std::cout << "[" << rank << "] "  << "sent to " << left << ", " << right
     // << std::endl;
@@ -247,6 +258,9 @@ int main(int argc, char *argv[]) {
     // right << std::endl;
 
     MPI_Barrier(cartesian2d);
+
+    board.set_left_ghost_col(&rec_left_col);
+    board.set_right_ghost_col(&rec_right_col);
 
     /* We now use the NEW ghost columns to send the ghost CORNERS along with the
      * rows.*/
@@ -272,6 +286,16 @@ int main(int argc, char *argv[]) {
 
     board.set_bottom_ghost_row(&rec_bottom_row_p);
     board.set_upper_ghost_row(&rec_top_row_p);
+
+#ifdef DEBUG
+  if (rank == 0 || rank == 2) {
+    /* Display the board with ghost cells attached.*/
+    std::cout << "Processor " << rank << " with co " << co_x << ", " << co_y
+              << " has ghost board " << std::endl;
+    board.ghost_display();
+    std::cout << std::endl;
+  }
+#endif
 
     if (i % params.save_interval == 0) {
       if (rank != 0) {
@@ -307,6 +331,7 @@ int main(int argc, char *argv[]) {
 
         path = params.output_path + "step" + std::to_string(i) + ".txt";
         motherboard.save(path);
+
       }
     }
   }
