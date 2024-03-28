@@ -50,7 +50,7 @@ It can take many different values for the number of ranks, but there is the foll
 
 The reason is that the programme divides the grid into subgrids, which at this point have to be of equal size. Due to the Cartesian topology, the requirement follows. The second requirement is simply due to the implementation of the iterative procedure, which does not handle one-dimensional or single-cell boards.
 
-OpenMP parallelization is handled in the `params.txt` file, where the number of openMP threads can be indicated. However, openMP parallelisation is not yet optimised at the moment, and seems to slow the code down for the grids I tested. Very large grids could potentially experience a speed-up.
+OpenMP parallelization is handled in the `params.txt` file, where the number of openMP threads can be indicated. However, openMP parallelisation is not yet optimised at the moment, and seems to slow the code down for the grids I tested. Very large grids could potentially experience a speed-up. This is currently under development in the `dev` branch.
 
 ## Supercomputer
 
