@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <tuple>
 
 //Below needed for correct rendering on my laptop
 //#include "/usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h"
@@ -36,30 +37,14 @@ int main(int argc, char *argv[]) {
   /*
   Determine the dimensions of the Cartesian communicator
   */
-  int d1 = functions::find_opt_divisor(nranks);
-  int d2 = nranks / d1;
+  int d1, d2;
 
   if (rank == 0) {
+    
+    std::tie(d1, d2) = functions::find_Cart_dim(params.board_size, nranks);
+
     std::cout << "\nNumber of OMP threads: " << params.num_threads << std::endl;
-    std::cout << "Number of MPI ranks: " << nranks << std::endl;
-    std::cout << "Divisors: " << d1 << ", " << d2 << std::endl;
-
-    bool test_grid = functions::test_grid_parameters(params.board_size, d1, d2);
-
-    if (!test_grid) {
-      std::cout << "\nThe number of MPI ranks " << nranks
-                << " in combination with the board size " << params.board_size
-                << std::endl;
-      std::cout << "does not allow for a suitable Cartesian grid communicator."
-                << std::endl;
-      std::cout << "Please try again with different parameters, and make sure "
-                   "1) that the number of MPI ranks"
-                << std::endl;
-      std::cout << "has divisors whose ratio is smaller than 3 2) the board "
-                   "size is divisible by both divisors."
-                << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 1);
-    }
+    std::cout << "Number of MPI ranks: " << nranks << " = " << d1 << " x " << d2 << std::endl;
 
     // Display the parameters
     std::cout << std::endl
@@ -68,6 +53,9 @@ int main(int argc, char *argv[]) {
     params.display();
     std::cout << std::endl;
   }
+
+  MPI_Bcast(&d1, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&d2, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   /* 
   Create the Cartesian communicator.
@@ -148,11 +136,11 @@ int main(int argc, char *argv[]) {
 
   int board_size_x = params.board_size / d1;
   int board_size_y = params.board_size / d2;
-
-#ifdef DEBUG
-  std::cout << "\nBoard size: " << board_size_x << " x " << board_size_y
-            << std::endl;
-#endif
+  
+  if (rank == 0){
+    std::cout << "Board size induced by the " << d1 << " x " << d2 << " Cartesian communicator: " << board_size_x << " x " << board_size_y
+              << std::endl;
+  }
 
   /* 
   Now we need to select the correct sub-board at every rank.

@@ -11,6 +11,7 @@
 #include "Board.hpp"
 #include "GameParams.hpp"
 #include "Grid.hpp"
+#include <algorithm>
 
 //! Initialize the board with random data
 /*!
@@ -110,25 +111,42 @@ void functions::iteration_one_board(Board* board, GameParams* params,
     \param n The number to find the divisor of
     \return The largest divisor of n that is smaller than sqrt(n)
 */
-int functions::find_opt_divisor(int n) {
+int functions::find_largest_divisor(int n, int upper_bound) {
   double s = sqrt(n);
-  int d = floor(s);
+  int d = std::min(upper_bound, static_cast<int>(floor(s)));
   while (n % d != 0) {
     d--;
   }
   return d;
 }
 
-//! Test if the grid parameters allow for a suitable Cartesian grid communicator
+//! Find the dimensions of the Cartesian grid communicator, if possible.
 /*!
     \param board_size The size of the board
-    \param d1 The first divisor
-    \param d2 The second divisor (with d2 >= d1)
-    \return True if the parameters are suitable, false otherwise
+    \param nranks The number of ranks
+    \return A tuple with the dimensions of the Cartesian grid communicator
 */
-bool functions::test_grid_parameters(int board_size, int d1, int d2) {
-  bool test1 = (3 * d1 > d2);
-  bool test2 = (board_size % d1 == 0);
-  bool test3 = (board_size % d2 == 0);
-  return (test1 && test2 && test3);
+std::tuple<int, int> functions::find_Cart_dim(int board_size, int nranks){
+  int d1 = functions::find_largest_divisor(nranks, nranks);
+  int d2 = nranks / d1;
+
+  while ((board_size % d1 != 0 || board_size % d2 != 0) && d1 > 1) {
+    d1 = functions::find_largest_divisor(nranks, d1-1);
+    d2 = nranks / d1;
+  }
+
+  if (d1 == 1){
+    if (board_size % d2 == 0 && board_size > nranks){
+      return std::make_tuple(1, d2);
+    }
+    else{
+      std::cout << "\n\n";
+      std::cerr << "\nError: Could not find suitable grid parameters." << std::endl; 
+      std::cout << "Try again and make sure nranks = a x b with a,b divisors of the board size.\n";
+      exit(1);
+    }
+  }
+  else{
+    return std::make_tuple(d1, d2);
+  }
 }
