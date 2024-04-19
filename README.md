@@ -1,6 +1,12 @@
 # Conway's Game of Life
 ### Seppe Staelens, ss3033
 
+This repository was my submission for the coursework of "Advanced Research Computing", part of the MPhil in Data Intensive Science at the University of Cambridge. I took this course as a requirement for my PhD funding, as I am supported by the Centre for Doctoral Training in Data Intensive Science. The original assignment can be found in `coursework.md` -- I was given permission to upload this repository to my own GitHub.
+
+The project as a whole is not completely finished, as I dropped it after the submission deadline, and is therefore not a perfect implementation. It does however display many good coding practices.
+
+## Installation
+
 Upon cloning the repository, the code can be built by running
 
 ```bash
